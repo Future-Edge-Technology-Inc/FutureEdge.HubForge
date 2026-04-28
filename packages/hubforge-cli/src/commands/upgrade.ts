@@ -14,6 +14,7 @@ type Metadata = {
   dbProvider?: InitScaffoldOptions['dbProvider'];
   tenantMode?: InitScaffoldOptions['tenantMode'];
   aiMode?: InitScaffoldOptions['aiMode'];
+  aiProvider?: InitScaffoldOptions['aiProvider'];
   authMode?: InitScaffoldOptions['authMode'];
   authProvider?: InitScaffoldOptions['authProvider'];
   authServer?: boolean;
@@ -63,16 +64,21 @@ export async function runUpgradeCommand(args: string[]): Promise<void> {
   await hooks.beforeUpgrade?.({ cwd: targetDir, command: 'upgrade', args, targetDir, force });
 
   const tempRoot = await mkdtemp(path.join(tmpdir(), 'hubforge-upgrade-'));
-  const scaffoldDir = path.join(tempRoot, metadata.name ?? 'upgraded-project');
+  const metadataName = (metadata.name ?? '').trim();
+  const safeName = path.basename(metadataName || 'upgraded-project').replace(/[^a-zA-Z0-9._-]/g, '-');
+  const scaffoldDir = path.join(tempRoot, safeName || 'upgraded-project');
 
   const options: InitScaffoldOptions = {
     projectName: path.basename(scaffoldDir),
     dbProvider: metadata.dbProvider ?? 'sqlite',
     tenantMode: metadata.tenantMode ?? 'shared',
     aiMode: metadata.aiMode ?? 'fastapi',
+    aiProvider: metadata.aiProvider ?? 'mock',
+    aiKey: 'change-me',
     authMode: metadata.authMode ?? 'local',
     authProvider: metadata.authProvider ?? 'zitadel',
     authServer: metadata.authServer ?? false,
+    seed: false,
     templatePack: metadata.templatePack ?? 'full',
     force: true,
   };
