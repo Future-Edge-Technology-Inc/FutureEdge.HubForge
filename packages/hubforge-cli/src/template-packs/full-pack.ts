@@ -26,6 +26,7 @@ export async function scaffoldFullTemplatePack(targetDir: string, options: InitS
   await writeTextFile(path.join(targetDir, 'apps', 'api', 'Dockerfile'), apiDockerfile());
   await writeTextFile(path.join(targetDir, 'apps', 'api', 'src', 'server.ts'), apiServerTs(options));
   await writeTextFile(path.join(targetDir, 'apps', 'api', 'src', 'lib', 'auth.ts'), apiAuthLibTs());
+  await writeTextFile(path.join(targetDir, 'apps', 'api', 'src', 'lib', 'logger.ts'), apiLoggerLibTs());
   await writeTextFile(path.join(targetDir, 'apps', 'api', 'src', 'lib', 'email-settings-store.ts'), apiEmailSettingsStoreLibTs());
   await writeTextFile(path.join(targetDir, 'apps', 'api', 'src', 'lib', 'notifications.ts'), apiNotificationsLibTs());
   await writeTextFile(path.join(targetDir, 'apps', 'api', 'src', 'lib', 'webhook-queue.ts'), apiWebhookQueueLibTs());
@@ -40,6 +41,7 @@ export async function scaffoldFullTemplatePack(targetDir: string, options: InitS
   await writeTextFile(path.join(targetDir, 'apps', 'api', 'src', 'routes', 'rbac.ts'), apiRbacRouteTs());
   await writeTextFile(path.join(targetDir, 'apps', 'api', 'src', 'routes', 'billing.ts'), apiBillingRouteTs());
   await writeTextFile(path.join(targetDir, 'apps', 'api', 'src', 'routes', 'background-jobs.ts'), apiJobsRouteTs());
+  await writeTextFile(path.join(targetDir, 'apps', 'api', 'src', 'routes', 'logs.ts'), apiLogsRouteTs());
   if (options.authServer) {
     await writeTextFile(path.join(targetDir, 'apps', 'api', 'src', 'routes', 'auth-server-settings.ts'), apiAuthServerSettingsRouteTs());
   }
@@ -55,6 +57,7 @@ export async function scaffoldFullTemplatePack(targetDir: string, options: InitS
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes.ts'), rrRoutesTs());
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'app.css'), tailwindCss());
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'lib', 'menu.ts'), portalMenuLibTs(options));
+  await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'lib', 'client-logger.ts'), portalClientLoggerLibTs());
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'lib', 'theme.ts'), portalThemeLibTs());
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'lib', 'i18n.ts'), portalI18nLibTs());
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'lib', 'theme-registry.ts'), portalThemeRegistryTs());
@@ -63,18 +66,31 @@ export async function scaffoldFullTemplatePack(targetDir: string, options: InitS
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', 'login.tsx'), portalLoginRoute());
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.tsx'), portalAppLayout(options));
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.dashboard._index.tsx'), portalDashboardRoute());
+  await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.customers._index.tsx'), portalModuleOverviewRoute('Customers', 'Manage customer profiles, service history, addresses, and account lifecycle.', ['Create customer records', 'Track open service items', 'Review billing and SLA context']));
+  await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.technicians._index.tsx'), portalModuleOverviewRoute('Technicians', 'Coordinate technician assignments, skills, capacity, and service territories.', ['Monitor utilization', 'Match skills to work orders', 'Balance route workload']));
+  await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.appointments._index.tsx'), portalModuleOverviewRoute('Appointments', 'Schedule and track upcoming onsite and remote service appointments.', ['Calendar visibility', 'Conflict detection', 'Status progression']));
+  await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.dispatch._index.tsx'), portalModuleOverviewRoute('Dispatch Board', 'Run real-time dispatch operations with SLA-aware prioritization.', ['Queue by urgency', 'Drag-and-drop assignment', 'Escalation monitoring']));
+  await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.inventory._index.tsx'), portalModuleOverviewRoute('Inventory', 'Track stocked parts, truck inventory, and replenishment operations.', ['Stock availability', 'Part reservations', 'Reorder signals']));
+  await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.invoices._index.tsx'), portalModuleOverviewRoute('Invoices', 'Generate and monitor invoices, payment status, and receivables activity.', ['Invoice lifecycle', 'Aging visibility', 'Collections workflow']));
+  await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.billing._index.tsx'), portalModuleOverviewRoute('Subscriptions & Billing', 'Manage customer plans, renewals, and tenant billing controls.', ['Plan assignment', 'Renewal tracking', 'Billing audit trail']));
+  await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.background-jobs._index.tsx'), portalModuleOverviewRoute('Background Jobs', 'Operate asynchronous queues, retries, and scheduled task execution.', ['Retry and failure queues', 'Schedule visibility', 'Execution diagnostics']));
+  await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.reports._index.tsx'), portalModuleOverviewRoute('Reports', 'Analyze operational throughput, revenue, and technician performance.', ['KPI snapshots', 'Utilization trends', 'Profitability by account']));
+  await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.workflows._index.tsx'), portalModuleOverviewRoute('Workflows', 'Automate recurring service processes and event-driven business logic.', ['Rule orchestration', 'State transitions', 'Exception handling']));
+  await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.webhooks._index.tsx'), portalModuleOverviewRoute('Webhooks', 'Observe outbound integrations and webhook delivery reliability.', ['Endpoint health', 'Retry monitoring', 'Payload diagnostics']));
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.users._index.tsx'), portalUsersRoute());
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.roles._index.tsx'), portalRolesRoute());
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.permissions._index.tsx'), portalPermissionsRoute());
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.jobs._index.tsx'), portalJobsRoute());
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.assistant._index.tsx'), portalAssistantRoute());
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.notifications._index.tsx'), portalNotificationsRoute());
+  await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.logs._index.tsx'), portalLogsViewerRoute());
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.profile._index.tsx'), portalProfileRoute());
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.audit-log._index.tsx'), portalAuditLogRoute());
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.docs._index.tsx'), portalDocsRoute());
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.settings._index.tsx'), portalSettingsIndexRoute(options));
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.settings.modules._index.tsx'), portalModulesRoute());
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.settings.email-account._index.tsx'), portalEmailAccountSettingsRoute());
+  await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.settings.logging._index.tsx'), portalLoggingSettingsRoute());
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '_app.settings.theme._index.tsx'), portalThemeSettingsRoute());
   await writeTextFile(path.join(targetDir, 'apps', 'portal', 'app', 'routes', '$.tsx'), portalNotFoundRoute());
   if (options.authServer) {
@@ -142,21 +158,28 @@ export async function scaffoldFullTemplatePack(targetDir: string, options: InitS
   await writeTextFile(path.join(targetDir, 'packages', 'jobs', 'tsconfig.json'), packageTsConfig());
   await writeTextFile(path.join(targetDir, 'packages', 'jobs', 'src', 'worker.ts'), jobsWorkerTs());
 
+  // packages/job-service
+  await writeTextFile(path.join(targetDir, 'packages', 'job-service', 'package.json'), jobServicePackageJson());
+  await writeTextFile(path.join(targetDir, 'packages', 'job-service', 'tsconfig.json'), jobServiceTsConfig());
+  await writeTextFile(path.join(targetDir, 'packages', 'job-service', 'src', 'worker.ts'), jobServiceWorkerTs());
+
   // packages/db
   await writeTextFile(path.join(targetDir, 'packages', 'db', 'package.json'), dbPackageJson());
   await writeTextFile(path.join(targetDir, 'packages', 'db', 'tsconfig.json'), packageTsConfig());
   await writeTextFile(path.join(targetDir, 'packages', 'db', '.env'), dbEnvFile(options.dbProvider));
+  await writeTextFile(path.join(targetDir, 'packages', 'db', 'drizzle.config.ts'), drizzleConfigTs(options));
   await writeTextFile(path.join(targetDir, 'packages', 'db', 'scripts', 'bootstrap-postgres.mjs'), dbBootstrapPostgresScript());
   await writeTextFile(path.join(targetDir, 'packages', 'db', 'scripts', 'seed-registry.mjs'), dbSeedRegistryScript());
-  await writeTextFile(path.join(targetDir, 'packages', 'db', 'src', 'index.ts'), dbIndexTs());
+  await writeTextFile(path.join(targetDir, 'packages', 'db', 'src', 'index.ts'), dbIndexTs(options));
+  await writeTextFile(path.join(targetDir, 'packages', 'db', 'src', 'schema.ts'), dbSchemaTs(options));
+  await writeTextFile(path.join(targetDir, 'packages', 'db', 'src', 'rbac.ts'), dbRbacTs());
   await writeTextFile(path.join(targetDir, 'packages', 'db', 'src', 'settings.ts'), dbSettingsTs());
   await writeTextFile(path.join(targetDir, 'packages', 'db', 'src', 'notifications.ts'), dbNotificationsTs());
   await writeTextFile(path.join(targetDir, 'packages', 'db', 'src', 'permissions.ts'), dbPermissionsTs());
   await writeTextFile(path.join(targetDir, 'packages', 'db', 'src', 'billing.ts'), dbBillingTs());
   await writeTextFile(path.join(targetDir, 'packages', 'db', 'src', 'jobs.ts'), dbJobsTs());
-  await writeTextFile(path.join(targetDir, 'packages', 'db', 'scripts', 'seed.mjs'), dbSeedScript());
-  await writeTextFile(path.join(targetDir, 'packages', 'db', 'prisma', 'schema.prisma'), prismaSchema(options));
-  await writeTextFile(path.join(targetDir, 'packages', 'db', 'migrations', '0001_init.sql'), initialMigrationSql(options));
+  await writeTextFile(path.join(targetDir, 'packages', 'db', 'src', 'logging.ts'), dbLoggingTs());
+  await writeTextFile(path.join(targetDir, 'packages', 'db', 'scripts', 'seed.ts'), dbSeedScript(options));
 
   // Root test + CI scaffolding
   await writeTextFile(path.join(targetDir, 'playwright.config.ts'), playwrightConfigTs());
@@ -179,6 +202,7 @@ function rootPackageJson(projectName: string): string {
       'dev:all': 'pnpm turbo dev',
       'dev:api': 'pnpm --filter @hubforge/api dev',
       'dev:jobs': 'pnpm --filter @hubforge/jobs dev',
+      'dev:job-service': 'pnpm --filter @hubforge/job-service dev',
       'dev:ui': 'pnpm --filter @hubforge/ui-app dev',
       'dev:portal': 'pnpm --filter @hubforge/portal dev',
       'db:bootstrap': 'pnpm --filter @hubforge/db db:bootstrap',
@@ -390,6 +414,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 
 \`\`\`bash
 pnpm dev:api      # API on :4000
+pnpm dev:job-service # decoupled worker on :queue
 pnpm dev:ui       # Public site on :3010
 pnpm dev:portal   # Portal on :3001
 \`\`\`
@@ -430,6 +455,9 @@ hubforge feature billing --type billing-module
 
 # Push notifications module (Firebase)
 hubforge feature alerts --type notifications-module
+
+# Enterprise logging module
+hubforge feature logging --type logging-module
 
 # Auth flow (login/register/callback routes)
 hubforge feature auth --type auth-flow
@@ -705,7 +733,9 @@ import { registerAiAssistantRoutes } from './routes/ai-assistant.js';
 import { registerUsersRoutes, registerRolesRoutes, registerPermissionsRoutes } from './routes/rbac.js';
 import { registerBillingRoutes } from './routes/billing.js';
 import { registerJobRoutes } from './routes/background-jobs.js';
+import { registerLogRoutes } from './routes/logs.js';
 import { PermissionRegistry } from '@hubforge/db';
+import { logEvent } from './lib/logger.js';
 ${authServerImport}
 
 const app = new Hono();
@@ -792,14 +822,26 @@ app.use('*', async (c, next) => {
   }
 
   const latencyMs = Date.now() - startedAt;
-  console.log(JSON.stringify({
-    level: 'info',
-    traceId,
-    method: c.req.method,
-    path: c.req.path,
-    status: c.res.status,
-    latencyMs,
-  }));
+  const tenantId = c.req.header('x-tenant-id') ?? null;
+  const auth = (c as unknown as { get: (key: string) => unknown }).get('auth') as { sub?: string } | undefined;
+  const ip = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip') ?? undefined;
+  const userAgent = c.req.header('user-agent') ?? undefined;
+
+  await logEvent(c.res.status >= 500 ? 'error' : 'info', 'HTTP request completed', {
+    tenantId,
+    userId: auth?.sub ?? null,
+    correlationId: traceId,
+    request: {
+      method: c.req.method,
+      path: c.req.path,
+      ...(ip ? { ip } : {}),
+      ...(userAgent ? { userAgent } : {}),
+    },
+    response: {
+      status: c.res.status,
+      durationMs: latencyMs,
+    },
+  });
 
   return c.res;
 });
@@ -817,6 +859,7 @@ registerRolesRoutes(app);
 registerPermissionsRoutes(app);
 registerBillingRoutes(app);
 registerJobRoutes(app);
+registerLogRoutes(app);
 
 app.use('/v1/*', async (c, next) => {
   if (publicV1Paths.has(c.req.path)) {
@@ -993,6 +1036,207 @@ export async function requireAuth(c: Context, next: Next): Promise<Response | vo
     const message = error instanceof Error ? error.message : 'Invalid token';
     return c.json({ error: 'Unauthorized', details: message }, 401);
   }
+}
+`;
+}
+
+function apiLoggerLibTs(): string {
+  return `import { LogService, type LogLevel } from '@hubforge/db';
+
+const elasticUrl = process.env['ELASTIC_URL'];
+const serviceName = process.env['SERVICE_NAME'] ?? 'hubforge-api';
+
+export type LogContext = {
+  tenantId?: string | null;
+  userId?: string | null;
+  environmentId?: string | null;
+  correlationId?: string | null;
+  request?: {
+    method?: string;
+    path?: string;
+    ip?: string;
+    userAgent?: string;
+    headers?: Record<string, string | undefined>;
+    body?: unknown;
+  };
+  response?: {
+    status?: number;
+    durationMs?: number;
+    body?: unknown;
+  };
+  stack?: string;
+  error?: string;
+  [key: string]: unknown;
+};
+
+async function writeAdvancedLog(level: LogLevel, message: string, details: Record<string, unknown>) {
+  if (!elasticUrl) return;
+  try {
+    await fetch(elasticUrl.replace(/\/$/, '') + '/hubforge-logs/_doc', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        timestamp: new Date().toISOString(),
+        service: serviceName,
+        level,
+        message,
+        ...details,
+      }),
+    });
+  } catch {
+    // Best-effort sink
+  }
+}
+
+export async function logEvent(level: LogLevel, message: string, context: LogContext): Promise<void> {
+  const payload = {
+    tenantId: context.tenantId ?? null,
+    environmentId: context.environmentId ?? null,
+    userId: context.userId ?? null,
+    correlationId: context.correlationId ?? null,
+    request: context.request,
+    response: context.response,
+    stack: context.stack,
+    error: context.error,
+    ...context,
+  };
+
+  const printable = {
+    timestamp: new Date().toISOString(),
+    service: serviceName,
+    level,
+    message,
+    ...payload,
+  };
+  console.log(JSON.stringify(printable));
+
+  if (!context.tenantId) {
+    await writeAdvancedLog(level, message, printable as Record<string, unknown>);
+    return;
+  }
+
+  const settings = await LogService.getSettings(context.tenantId);
+  if (!LogService.shouldLog(settings.level, level)) {
+    return;
+  }
+
+  if (settings.useLocalDb) {
+    const createInput: {
+      tenantId: string;
+      service: string;
+      level: LogLevel;
+      message: string;
+      details: Record<string, unknown>;
+      environmentId?: string | null;
+    } = {
+      tenantId: context.tenantId,
+      service: serviceName,
+      level,
+      message,
+      details: payload,
+      ...(context.environmentId !== undefined ? { environmentId: context.environmentId } : {}),
+    };
+
+    await LogService.create(createInput);
+  }
+
+  if (settings.advancedEnabled) {
+    await writeAdvancedLog(level, message, printable as Record<string, unknown>);
+  }
+}
+`;
+}
+
+function apiLogsRouteTs(): string {
+  return `import type { Hono } from 'hono';
+import { LogService } from '@hubforge/db';
+import { requireAuth } from '../lib/auth.js';
+import { logEvent, type LogContext } from '../lib/logger.js';
+
+type LogLevel = 'error' | 'warn' | 'info' | 'debug';
+
+function parseLevel(value: unknown): LogLevel {
+  return value === 'error' || value === 'warn' || value === 'info' || value === 'debug' ? value : 'info';
+}
+
+export function registerLogRoutes(app: Hono): void {
+  app.get('/v1/logs/settings', requireAuth, async (c) => {
+    const tenantId = c.req.header('x-tenant-id');
+    if (!tenantId) return c.json({ error: 'x-tenant-id required' }, 400);
+    return c.json(await LogService.getSettings(tenantId));
+  });
+
+  app.put('/v1/logs/settings', requireAuth, async (c) => {
+    const tenantId = c.req.header('x-tenant-id');
+    if (!tenantId) return c.json({ error: 'x-tenant-id required' }, 400);
+
+    const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
+    const patch = {
+      ...(body['level'] !== undefined ? { level: parseLevel(body['level']) } : {}),
+      ...(typeof body['useLocalDb'] === 'boolean' ? { useLocalDb: body['useLocalDb'] } : {}),
+      ...(typeof body['retentionDays'] === 'number' ? { retentionDays: Math.max(1, Math.floor(body['retentionDays'])) } : {}),
+      ...(typeof body['advancedEnabled'] === 'boolean' ? { advancedEnabled: body['advancedEnabled'] } : {}),
+    };
+
+    return c.json(await LogService.setSettings(tenantId, patch));
+  });
+
+  app.get('/v1/logs', requireAuth, async (c) => {
+    const tenantId = c.req.header('x-tenant-id');
+    if (!tenantId) return c.json({ error: 'x-tenant-id required' }, 400);
+
+    const levelRaw = c.req.query('level');
+    const level = levelRaw === 'all' ? 'all' : parseLevel(levelRaw);
+    const service = c.req.query('service') ?? undefined;
+    const from = c.req.query('from');
+    const to = c.req.query('to');
+    const limitRaw = Number(c.req.query('limit') ?? 100);
+
+    const listOptions: { level?: 'all' | LogLevel; service?: string; from?: Date; to?: Date; limit?: number } = {
+      level,
+      limit: Number.isFinite(limitRaw) ? limitRaw : 100,
+      ...(service ? { service } : {}),
+      ...(from ? { from: new Date(from) } : {}),
+      ...(to ? { to: new Date(to) } : {}),
+    };
+
+    const entries = await LogService.list(tenantId, listOptions);
+
+    return c.json(entries);
+  });
+
+  app.post('/v1/logs', async (c) => {
+    const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
+
+    const tenantId = typeof body['tenantId'] === 'string'
+      ? body['tenantId']
+      : c.req.header('x-tenant-id') ?? null;
+
+    if (!tenantId) {
+      return c.json({ error: 'tenantId is required' }, 400);
+    }
+
+    if (typeof body['message'] !== 'string' || body['message'].trim().length === 0) {
+      return c.json({ error: 'message is required' }, 400);
+    }
+
+    const level = parseLevel(body['level']);
+    const details = typeof body['details'] === 'object' && body['details'] ? body['details'] : undefined;
+    const context: LogContext = {
+      tenantId,
+      environmentId: typeof body['environmentId'] === 'string' ? body['environmentId'] : c.req.header('x-environment') ?? null,
+      userId: typeof body['userId'] === 'string' ? body['userId'] : null,
+      correlationId: c.req.header('x-trace-id') ?? c.req.header('x-request-id') ?? null,
+      ...(details ? { details } : {}),
+      request: {
+        method: c.req.method,
+        path: c.req.path,
+      },
+    };
+
+    await logEvent(level, body['message'], context);
+    return c.json({ ok: true }, 201);
+  });
 }
 `;
 }
@@ -1291,7 +1535,7 @@ function apiAuthRouteTs(options: InitScaffoldOptions): string {
   const providerBlock = options.authServer
     ? `const tenantId = c.req.header('x-tenant-id');
     if (tenantId) {
-      const settings = await prisma.authServerSettings.findUnique({ where: { tenantId } });
+      const settings = await db.query.authServerSettings.findFirst({ where: eq(authServerSettings.tenantId, tenantId) });
       if (settings?.enabled) {
         return c.json({
           mode: 'external',
@@ -1319,10 +1563,11 @@ function apiAuthRouteTs(options: InitScaffoldOptions): string {
 
   return `import type { Hono } from 'hono';
 import { SignJWT, jwtVerify } from 'jose';
-import { prisma, SettingsService } from '@hubforge/db';
+import { db, SettingsService, users, memberships, tenants, authServerSettings } from '@hubforge/db';
+import { eq, and } from 'drizzle-orm';
 
 const secret = new TextEncoder().encode(
-  process.env['AUTH_LOCAL_JWT_SECRET'] ?? 'hubforge-local-dev-secret-change-me',
+  process.env['AUTH_LOCAL_JWT_SECRET'] ?? 'hubforge-local-dev-secret',
 );
 const issuer = 'http://localhost:4000/local-auth';
 const audience = 'hubforge-local';
@@ -1354,12 +1599,14 @@ async function resolveAuthenticatedContext(c: any): Promise<AuthenticatedContext
 
   try {
     const { payload } = await jwtVerify(token, secret, { issuer, audience });
-    const user = await prisma.user.findUnique({ where: { id: payload['sub'] as string } });
+    const user = await db.query.users.findFirst({ where: eq(users.id, payload['sub'] as string) });
     if (!user) return null;
-    const memberships = await prisma.membership.findMany({ where: { userId: user.id }, include: { tenant: true } });
+    const membershipRows = await db.select().from(memberships)
+      .leftJoin(tenants, eq(memberships.tenantId, tenants.id))
+      .where(eq(memberships.userId, user.id));
     return {
       user: { id: user.id, email: user.email, name: user.name },
-      memberships,
+      memberships: membershipRows.map(r => ({ ...r.memberships, tenant: r.tenants })),
     };
   } catch {
     return null;
@@ -1394,25 +1641,26 @@ export function registerAuthRoutes(app: Hono): void {
     if (typeof body.email !== 'string' || typeof body.password !== 'string') {
       return c.json({ error: 'email and password are required' }, 400);
     }
-    const existing = await prisma.user.findUnique({ where: { email: body.email } });
+    const existing = await db.query.users.findFirst({ where: eq(users.email, body.email) });
     if (existing) return c.json({ error: 'Email already registered' }, 409);
 
     const passwordHash = await hashPassword(body.password);
-    const user = await prisma.user.create({
-      data: { email: body.email, name: typeof body.name === 'string' ? body.name : null, passwordHash },
-    });
+    const [user] = await db.insert(users)
+      .values({ email: body.email, name: typeof body.name === 'string' ? body.name : null, passwordHash })
+      .returning();
 
     const slug = typeof body.tenantSlug === 'string' && body.tenantSlug
       ? body.tenantSlug
       : body.email.split('@')[0]!.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    let tenant = await prisma.tenant.findUnique({ where: { slug } });
-    if (!tenant) tenant = await prisma.tenant.create({ data: { slug, name: slug } });
+    let tenant = await db.query.tenants.findFirst({ where: eq(tenants.slug, slug) });
+    if (!tenant) {
+      const [newTenant] = await db.insert(tenants).values({ slug, name: slug }).returning();
+      tenant = newTenant;
+    }
 
-    await prisma.membership.upsert({
-      where: { tenantId_userId: { tenantId: tenant.id, userId: user.id } },
-      update: {},
-      create: { tenantId: tenant.id, userId: user.id, role: 'admin' },
-    });
+    await db.insert(memberships)
+      .values({ tenantId: tenant.id, userId: user.id, role: 'admin' })
+      .onConflictDoUpdate({ target: [memberships.tenantId, memberships.userId], set: { role: 'admin' } });
     const token = await signToken(user.id, user.email);
     return c.json({ token, user: { id: user.id, email: user.email, name: user.name }, tenantId: tenant.id }, 201);
   };
@@ -1425,11 +1673,11 @@ export function registerAuthRoutes(app: Hono): void {
     if (typeof body.email !== 'string' || typeof body.password !== 'string') {
       return c.json({ error: 'email and password are required' }, 400);
     }
-    const user = await prisma.user.findUnique({ where: { email: body.email } });
+    const user = await db.query.users.findFirst({ where: eq(users.email, body.email) });
     if (!user?.passwordHash) return c.json({ error: 'Invalid credentials' }, 401);
     const hash = await hashPassword(body.password);
     if (hash !== user.passwordHash) return c.json({ error: 'Invalid credentials' }, 401);
-    const membership = await prisma.membership.findFirst({ where: { userId: user.id } });
+    const membership = await db.query.memberships.findFirst({ where: eq(memberships.userId, user.id) });
     const token = await signToken(user.id, user.email);
     return c.json({ token, user: { id: user.id, email: user.email, name: user.name }, tenantId: membership?.tenantId ?? null });
   };
@@ -1474,7 +1722,7 @@ export function registerAuthRoutes(app: Hono): void {
     }
 
     if (typeof body['email'] === 'string' && body['email'].trim().length > 0 && body['email'] !== auth.user.email) {
-      const existing = await prisma.user.findUnique({ where: { email: body['email'] } });
+      const existing = await db.query.users.findFirst({ where: eq(users.email, body['email']) });
       if (existing && existing.id !== auth.user.id) {
         return c.json({ error: 'Email already in use' }, 409);
       }
@@ -1482,8 +1730,8 @@ export function registerAuthRoutes(app: Hono): void {
     }
 
     const updated = Object.keys(updateData).length > 0
-      ? await prisma.user.update({ where: { id: auth.user.id }, data: updateData })
-      : await prisma.user.findUnique({ where: { id: auth.user.id } });
+      ? (await db.update(users).set(updateData).where(eq(users.id, auth.user.id)).returning())[0]
+      : await db.query.users.findFirst({ where: eq(users.id, auth.user.id) });
 
     if (!updated) return c.json({ error: 'User not found' }, 404);
 
@@ -1530,61 +1778,27 @@ export function registerAuthRoutes(app: Hono): void {
 }
 
 function portalI18nLibTs(): string {
-  return `import { useState } from 'react';
-import { useNavigate } from 'react-router';
+  return `import { useEffect, useState } from 'react';
 
-const API = (import.meta as { env?: Record<string, string> }).env?.['VITE_API_URL'] ?? 'http://localhost:4000';
-
-export default function LoginPage() {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState('admin@fieldops-demo.com');
-  const [password, setPassword] = useState('Password1!');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    const res = await fetch(API + '/auth/login', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!res.ok) {
-      setLoading(false);
-      setError('Invalid credentials or API not running.');
-      return;
-    }
-
-    const data = (await res.json()) as { token: string; tenantId: string | null };
-    localStorage.setItem('token', data.token);
-    if (data.tenantId) localStorage.setItem('tenantId', data.tenantId);
-    setLoading(false);
-    navigate('/dashboard');
-  }
-
-  return (
+const STORAGE_KEY = 'portal-language';
+const EVENT_NAME = 'portal-language-change';
 
 export type PortalLanguage = 'en' | 'es';
 
-        <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1.5rem' }}>Sign in with database credentials.</p>
-        <form onSubmit={onSubmit}>
-
 const dictionary: Record<PortalLanguage, Record<string, string>> = {
-            <input value={email} onChange={(e) => setEmail(e.currentTarget.value)} type="email" name="email" required style={{ width: '100%', padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 8, boxSizing: 'border-box' }} />
+  en: {
     'workspace.label': 'Workspace',
-          <div style={{ marginBottom: '1rem' }}>
+    'workspace.title': 'Control Center',
     'nav.section.operations': 'Operations',
-            <input value={password} onChange={(e) => setPassword(e.currentTarget.value)} type="password" name="password" required style={{ width: '100%', padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 8, boxSizing: 'border-box' }} />
+    'nav.section.platform': 'Platform',
     'nav.dashboard': 'Dashboard',
-          {error && <p style={{ color: '#dc2626', fontSize: '0.8rem', marginBottom: '0.75rem' }}>{error}</p>}
-          <button disabled={loading} type="submit" style={{ width: '100%', background: '#2563eb', color: '#fff', padding: 10, borderRadius: 8, border: 'none', fontWeight: 500, cursor: 'pointer' }}>
-            {loading ? 'Signing in...' : 'Sign in'}
+    'nav.users': 'Users',
+    'nav.roles': 'Roles',
     'nav.permissions': 'Permissions',
     'nav.assistant': 'AI Assistant',
+    'nav.jobs': 'Background Jobs',
+    'nav.notifications': 'Notifications',
+    'nav.audit_log': 'Audit Log',
     'nav.modules': 'Modules',
     'nav.settings': 'Settings',
     'nav.email_account': 'Email Account',
@@ -1708,13 +1922,14 @@ export function useI18n() {
 
 function apiAuthServerSettingsRouteTs(): string {
   return `import type { Hono } from 'hono';
-import { prisma } from '@hubforge/db';
+import { db, authServerSettings } from '@hubforge/db';
+import { eq } from 'drizzle-orm';
 
 export function registerAuthServerSettingsRoutes(app: Hono): void {
   app.get('/v1/settings/auth-server', async (c) => {
     const tenantId = c.req.header('x-tenant-id');
     if (!tenantId) return c.json({ error: 'x-tenant-id required' }, 400);
-    const settings = await prisma.authServerSettings.findUnique({ where: { tenantId } });
+    const settings = await db.query.authServerSettings.findFirst({ where: eq(authServerSettings.tenantId, tenantId) });
     return c.json({
       enabled: settings?.enabled ?? false,
       provider: settings?.provider ?? null,
@@ -1731,18 +1946,8 @@ export function registerAuthServerSettingsRoutes(app: Hono): void {
     if (!tenantId) return c.json({ error: 'x-tenant-id required' }, 400);
     const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
 
-    const settings = await prisma.authServerSettings.upsert({
-      where: { tenantId },
-      update: {
-        enabled: body['enabled'] === true,
-        provider: typeof body['provider'] === 'string' ? body['provider'] : null,
-        issuerUrl: typeof body['issuerUrl'] === 'string' ? body['issuerUrl'] : null,
-        jwksUrl: typeof body['jwksUrl'] === 'string' ? body['jwksUrl'] : null,
-        clientId: typeof body['clientId'] === 'string' ? body['clientId'] : null,
-        clientSecret: typeof body['clientSecret'] === 'string' ? body['clientSecret'] : null,
-        audience: typeof body['audience'] === 'string' ? body['audience'] : null,
-      },
-      create: {
+    const [settings] = await db.insert(authServerSettings)
+      .values({
         tenantId,
         enabled: body['enabled'] === true,
         provider: typeof body['provider'] === 'string' ? body['provider'] : null,
@@ -1751,8 +1956,22 @@ export function registerAuthServerSettingsRoutes(app: Hono): void {
         clientId: typeof body['clientId'] === 'string' ? body['clientId'] : null,
         clientSecret: typeof body['clientSecret'] === 'string' ? body['clientSecret'] : null,
         audience: typeof body['audience'] === 'string' ? body['audience'] : null,
-      },
-    });
+        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: [authServerSettings.tenantId],
+        set: {
+          enabled: body['enabled'] === true,
+          provider: typeof body['provider'] === 'string' ? body['provider'] : null,
+          issuerUrl: typeof body['issuerUrl'] === 'string' ? body['issuerUrl'] : null,
+          jwksUrl: typeof body['jwksUrl'] === 'string' ? body['jwksUrl'] : null,
+          clientId: typeof body['clientId'] === 'string' ? body['clientId'] : null,
+          clientSecret: typeof body['clientSecret'] === 'string' ? body['clientSecret'] : null,
+          audience: typeof body['audience'] === 'string' ? body['audience'] : null,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
 
     return c.json(settings);
   });
@@ -2222,7 +2441,7 @@ export function registerNotificationRoutes(app: Hono): void {
 
 function apiAiAssistantRouteTs(): string {
   return `import type { Hono } from 'hono';
-import { prisma } from '@hubforge/db';
+import { RbacService } from '@hubforge/db';
 import { requireAuth } from '../lib/auth.js';
 
 type AuthPayload = { sub?: unknown; email?: unknown };
@@ -2405,24 +2624,7 @@ async function generateAiJson(systemPrompt: string, userPrompt: string): Promise
 }
 
 async function hasPermission(userId: string, tenantId: string, module: string, action: string): Promise<boolean> {
-  const hit = await prisma.userRole.findFirst({
-    where: {
-      userId,
-      role: {
-        tenantId,
-        permissions: {
-          some: {
-            permission: {
-              module,
-              action,
-            },
-          },
-        },
-      },
-    },
-    select: { id: true },
-  });
-  return Boolean(hit);
+  return RbacService.hasPermission(userId, tenantId, module, action);
 }
 
 async function authorizeAiPermission(
@@ -2554,30 +2756,14 @@ export function registerAiAssistantRoutes(app: Hono): void {
 
 function apiRbacRouteTs(): string {
   return `import type { Hono } from 'hono';
-import { prisma } from '@hubforge/db';
+import { RbacService } from '@hubforge/db';
 import { requireAuth } from '../lib/auth.js';
 
 export function registerUsersRoutes(app: Hono): void {
   app.get('/v1/users', requireAuth, async (c) => {
     const tenantId = c.req.header('x-tenant-id');
     if (!tenantId) return c.json({ error: 'x-tenant-id required' }, 400);
-
-    const users = await prisma.user.findMany({
-      where: {
-        memberships: {
-          some: { tenantId },
-        },
-      },
-      include: {
-        memberships: { where: { tenantId } },
-        userRoles: {
-          where: { role: { tenantId } },
-          include: { role: true },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-
+    const users = await RbacService.listUsers(tenantId);
     return c.json(users);
   });
 
@@ -2586,38 +2772,10 @@ export function registerUsersRoutes(app: Hono): void {
     const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
     const email = body['email'];
     const name = body['name'];
-
     if (!tenantId) return c.json({ error: 'x-tenant-id required' }, 400);
     if (typeof email !== 'string') return c.json({ error: 'email is required' }, 400);
-
-    const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) return c.json({ error: 'User already exists' }, 409);
-
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name: typeof name === 'string' ? name : null,
-      },
-    });
-
-    await prisma.membership.upsert({
-      where: { tenantId_userId: { tenantId, userId: user.id } },
-      update: {},
-      create: { tenantId, userId: user.id, role: 'member' },
-    });
-
-    const hydrated = await prisma.user.findUnique({
-      where: { id: user.id },
-      include: {
-        memberships: { where: { tenantId } },
-        userRoles: {
-          where: { role: { tenantId } },
-          include: { role: true },
-        },
-      },
-    });
-
-    return c.json(hydrated, 201);
+    const user = await RbacService.createUser(tenantId, email, typeof name === 'string' ? name : null);
+    return c.json(user, 201);
   });
 
   app.put('/v1/users/:userId', requireAuth, async (c) => {
@@ -2625,27 +2783,12 @@ export function registerUsersRoutes(app: Hono): void {
     const userId = c.req.param('userId');
     if (!tenantId) return c.json({ error: 'x-tenant-id required' }, 400);
     if (!userId) return c.json({ error: 'userId is required' }, 400);
-
     const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
-    const update: Record<string, unknown> = {};
+    const update: { name?: string; email?: string } = {};
     if (typeof body['name'] === 'string') update.name = body['name'];
     if (typeof body['email'] === 'string') update.email = body['email'];
-
-    const membership = await prisma.membership.findFirst({ where: { tenantId, userId } });
-    if (!membership) return c.json({ error: 'User not found in tenant' }, 404);
-
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: update,
-      include: {
-        memberships: { where: { tenantId } },
-        userRoles: {
-          where: { role: { tenantId } },
-          include: { role: true },
-        },
-      },
-    });
-
+    const user = await RbacService.updateUser(userId, tenantId, update);
+    if (!user) return c.json({ error: 'User not found in tenant' }, 404);
     return c.json(user);
   });
 
@@ -2654,24 +2797,8 @@ export function registerUsersRoutes(app: Hono): void {
     const userId = c.req.param('userId');
     if (!tenantId) return c.json({ error: 'x-tenant-id required' }, 400);
     if (!userId) return c.json({ error: 'userId is required' }, 400);
-
-    const membership = await prisma.membership.findFirst({ where: { tenantId, userId } });
-    if (!membership) return c.json({ error: 'User not found in tenant' }, 404);
-
-    const tenantRoleIds = await prisma.role.findMany({ where: { tenantId }, select: { id: true } });
-    await prisma.userRole.deleteMany({
-      where: {
-        userId,
-        roleId: { in: tenantRoleIds.map((r) => r.id) },
-      },
-    });
-
-    await prisma.membership.deleteMany({ where: { tenantId, userId } });
-    const remainingMemberships = await prisma.membership.count({ where: { userId } });
-    if (remainingMemberships === 0) {
-      await prisma.user.delete({ where: { id: userId } });
-    }
-
+    const deleted = await RbacService.deleteUser(userId, tenantId);
+    if (!deleted) return c.json({ error: 'User not found in tenant' }, 404);
     return c.json({ success: true });
   });
 
@@ -2684,17 +2811,8 @@ export function registerUsersRoutes(app: Hono): void {
     if (typeof userId !== 'string' || typeof roleId !== 'string') {
       return c.json({ error: 'userId and roleId are required' }, 400);
     }
-
-    const role = await prisma.role.findFirst({ where: { id: roleId, tenantId } });
-    if (!role) return c.json({ error: 'Role not found in tenant' }, 404);
-
-    const membership = await prisma.membership.findFirst({ where: { tenantId, userId } });
-    if (!membership) return c.json({ error: 'User must belong to tenant before assignment' }, 400);
-
-    const assignment = await prisma.userRole.create({
-      data: { userId, roleId },
-      include: { role: true },
-    });
+    const assignment = await RbacService.assignRole(userId, roleId, tenantId);
+    if (!assignment) return c.json({ error: 'Role not found in tenant' }, 404);
     return c.json(assignment, 201);
   });
 
@@ -2703,16 +2821,8 @@ export function registerUsersRoutes(app: Hono): void {
     const id = c.req.param('id');
     if (!tenantId) return c.json({ error: 'x-tenant-id required' }, 400);
     if (!id) return c.json({ error: 'id is required' }, 400);
-
-    const assignment = await prisma.userRole.findUnique({
-      where: { id },
-      include: { role: true },
-    });
-    if (!assignment || assignment.role.tenantId !== tenantId) {
-      return c.json({ error: 'Assignment not found' }, 404);
-    }
-
-    const removed = await prisma.userRole.delete({ where: { id } });
+    const removed = await RbacService.removeRoleAssignment(id, tenantId);
+    if (!removed) return c.json({ error: 'Assignment not found' }, 404);
     return c.json(removed);
   });
 }
@@ -2721,13 +2831,7 @@ export function registerRolesRoutes(app: Hono): void {
   app.get('/v1/roles', requireAuth, async (c) => {
     const tenantId = c.req.header('x-tenant-id');
     if (!tenantId) return c.json({ error: 'x-tenant-id required' }, 400);
-
-    const roles = await prisma.role.findMany({
-      where: { tenantId },
-      include: { permissions: { include: { permission: true } } },
-      orderBy: { createdAt: 'desc' },
-    });
-
+    const roles = await RbacService.listRoles(tenantId);
     return c.json(roles);
   });
 
@@ -2737,32 +2841,19 @@ export function registerRolesRoutes(app: Hono): void {
     const name = body['name'];
     if (!tenantId) return c.json({ error: 'x-tenant-id required' }, 400);
     if (typeof name !== 'string') return c.json({ error: 'name is required' }, 400);
-
-    const role = await prisma.role.create({
-      data: {
-        tenantId,
-        name,
-        description: typeof body['description'] === 'string' ? body['description'] : null,
-      },
-      include: { permissions: { include: { permission: true } } },
-    });
+    const role = await RbacService.createRole(tenantId, name, typeof body['description'] === 'string' ? body['description'] : null);
     return c.json(role, 201);
   });
 
   app.put('/v1/roles/:roleId', requireAuth, async (c) => {
     const roleId = c.req.param('roleId');
     if (!roleId) return c.json({ error: 'roleId is required' }, 400);
-
     const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
-    const update: Record<string, unknown> = {};
+    const update: { name?: string; description?: string } = {};
     if (typeof body['name'] === 'string') update.name = body['name'];
     if (typeof body['description'] === 'string') update.description = body['description'];
-
-    const role = await prisma.role.update({
-      where: { id: roleId },
-      data: update,
-      include: { permissions: { include: { permission: true } } },
-    });
+    const role = await RbacService.updateRole(roleId, update);
+    if (!role) return c.json({ error: 'Role not found' }, 404);
     return c.json(role);
   });
 
@@ -2771,11 +2862,8 @@ export function registerRolesRoutes(app: Hono): void {
     const roleId = c.req.param('roleId');
     if (!tenantId) return c.json({ error: 'x-tenant-id required' }, 400);
     if (!roleId) return c.json({ error: 'roleId is required' }, 400);
-
-    const role = await prisma.role.findFirst({ where: { id: roleId, tenantId } });
-    if (!role) return c.json({ error: 'Role not found' }, 404);
-
-    await prisma.role.delete({ where: { id: roleId } });
+    const deleted = await RbacService.deleteRole(roleId, tenantId);
+    if (!deleted) return c.json({ error: 'Role not found' }, 404);
     return c.json({ success: true });
   });
 
@@ -2784,50 +2872,30 @@ export function registerRolesRoutes(app: Hono): void {
     const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
     const roleId = body['roleId'];
     const permissionId = body['permissionId'];
-
     if (!tenantId) return c.json({ error: 'x-tenant-id required' }, 400);
     if (typeof roleId !== 'string' || typeof permissionId !== 'string') {
       return c.json({ error: 'roleId and permissionId are required' }, 400);
     }
-
-    const role = await prisma.role.findFirst({ where: { id: roleId, tenantId } });
-    if (!role) return c.json({ error: 'Role not found in tenant' }, 404);
-
-    const assignment = await prisma.rolePermission.create({
-      data: { roleId, permissionId },
-      include: { permission: true },
-    });
-
+    const assignment = await RbacService.assignPermission(roleId, permissionId, tenantId);
+    if (!assignment) return c.json({ error: 'Role not found in tenant' }, 404);
     return c.json(assignment, 201);
   });
 
   app.delete('/v1/role-permissions/:id', requireAuth, async (c) => {
     const tenantId = c.req.header('x-tenant-id');
     const id = c.req.param('id');
-
     if (!tenantId) return c.json({ error: 'x-tenant-id required' }, 400);
     if (!id) return c.json({ error: 'id is required' }, 400);
-
-    const assignment = await prisma.rolePermission.findUnique({
-      where: { id },
-      include: { role: true },
-    });
-    if (!assignment || assignment.role.tenantId !== tenantId) {
-      return c.json({ error: 'Assignment not found' }, 404);
-    }
-
-    const removed = await prisma.rolePermission.delete({ where: { id } });
+    const removed = await RbacService.removePermissionAssignment(id, tenantId);
+    if (!removed) return c.json({ error: 'Assignment not found' }, 404);
     return c.json(removed);
   });
 }
 
 export function registerPermissionsRoutes(app: Hono): void {
   app.get('/v1/permissions', requireAuth, async (c) => {
-    const permissions = await prisma.permission.findMany({
-      orderBy: [{ module: 'asc' }, { action: 'asc' }],
-    });
-
-    return c.json(permissions);
+    const perms = await RbacService.listPermissions();
+    return c.json(perms);
   });
 
   app.post('/v1/permissions', requireAuth, async (c) => {
@@ -2835,45 +2903,30 @@ export function registerPermissionsRoutes(app: Hono): void {
     const module = body['module'];
     const action = body['action'];
     const description = body['description'];
-
     if (typeof module !== 'string' || typeof action !== 'string') {
       return c.json({ error: 'module and action are required' }, 400);
     }
-
-    const permission = await prisma.permission.create({
-      data: {
-        module,
-        action,
-        description: typeof description === 'string' ? description : null,
-      },
-    });
-
-    return c.json(permission, 201);
+    const perm = await RbacService.createPermission(module, action, typeof description === 'string' ? description : null);
+    return c.json(perm, 201);
   });
 
   app.put('/v1/permissions/:permissionId', requireAuth, async (c) => {
     const permissionId = c.req.param('permissionId');
     if (!permissionId) return c.json({ error: 'permissionId is required' }, 400);
-
     const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
-    const update: Record<string, unknown> = {};
+    const update: { module?: string; action?: string; description?: string } = {};
     if (typeof body['module'] === 'string') update.module = body['module'];
     if (typeof body['action'] === 'string') update.action = body['action'];
     if (typeof body['description'] === 'string') update.description = body['description'];
-
-    const permission = await prisma.permission.update({
-      where: { id: permissionId },
-      data: update,
-    });
-
-    return c.json(permission);
+    const perm = await RbacService.updatePermission(permissionId, update);
+    if (!perm) return c.json({ error: 'Permission not found' }, 404);
+    return c.json(perm);
   });
 
   app.delete('/v1/permissions/:permissionId', requireAuth, async (c) => {
     const permissionId = c.req.param('permissionId');
     if (!permissionId) return c.json({ error: 'permissionId is required' }, 400);
-
-    await prisma.permission.delete({ where: { id: permissionId } });
+    await RbacService.deletePermission(permissionId);
     return c.json({ success: true });
   });
 }
@@ -3235,7 +3288,8 @@ export function registerJobRoutes(app: Hono): void {
 
 function apiAuditLogRouteTs(): string {
   return `import type { Hono } from 'hono';
-import { prisma } from '@hubforge/db';
+import { db, auditLogs } from '@hubforge/db';
+import { eq, desc, count } from 'drizzle-orm';
 
 export function registerAuditLogRoutes(app: Hono): void {
   app.get('/v1/audit-log', async (c) => {
@@ -3245,15 +3299,14 @@ export function registerAuditLogRoutes(app: Hono): void {
     const limit = Math.min(100, Number(c.req.query('limit') ?? '30'));
     const start = (page - 1) * limit;
     const [items, total] = await Promise.all([
-      prisma.auditLog.findMany({
-        where: { tenantId },
-        orderBy: { createdAt: 'desc' },
-        skip: start,
-        take: limit,
-      }),
-      prisma.auditLog.count({ where: { tenantId } }),
+      db.select().from(auditLogs)
+        .where(eq(auditLogs.tenantId, tenantId))
+        .orderBy(desc(auditLogs.createdAt))
+        .limit(limit)
+        .offset(start),
+      db.select({ value: count() }).from(auditLogs).where(eq(auditLogs.tenantId, tenantId)),
     ]);
-    return c.json({ items, total, page, limit });
+    return c.json({ items, total: total[0]?.value ?? 0, page, limit });
   });
 }
 `;
@@ -3276,6 +3329,7 @@ function uiPackageJson(): string {
       '@react-router/node': '^7.0.0',
       '@react-router/serve': '^7.0.0',
       isbot: '^4.0.0',
+      loglevel: '^1.9.2',
       react: '^19.0.0',
       'react-dom': '^19.0.0',
       'react-router': '^7.0.0',
@@ -3355,21 +3409,21 @@ function tailwindCss(): string {
 
 :root {
   --hf-font: "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, sans-serif;
-  --hf-primary: #2563eb;
-  --hf-primary-hover: #1d4ed8;
-  --hf-primary-soft: rgba(37, 99, 235, 0.12);
-  --hf-surface: rgba(255, 255, 255, 0.92);
-  --hf-surface-alt: #f4f7fb;
-  --hf-surface-muted: #eef3f8;
-  --hf-foreground: #172033;
-  --hf-muted: #617089;
-  --hf-border: rgba(148, 163, 184, 0.22);
-  --hf-border-strong: rgba(100, 116, 139, 0.32);
-  --hf-sidebar: linear-gradient(180deg, #0f172a 0%, #111c34 100%);
-  --hf-sidebar-text: #afbdd4;
-  --hf-sidebar-active: rgba(255, 255, 255, 0.08);
-  --hf-sidebar-active-text: #f8fbff;
-  --hf-header: rgba(255, 255, 255, 0.82);
+  --hf-primary: #845adf;
+  --hf-primary-hover: #6f43cc;
+  --hf-primary-soft: rgba(132, 90, 223, 0.12);
+  --hf-surface: #ffffff;
+  --hf-surface-alt: #f0f1f7;
+  --hf-surface-muted: #f8f8fb;
+  --hf-foreground: #2a2f3e;
+  --hf-muted: #8c9097;
+  --hf-border: #e9edf4;
+  --hf-border-strong: #d7ddea;
+  --hf-sidebar: #ffffff;
+  --hf-sidebar-text: #536485;
+  --hf-sidebar-active: #f0ebfc;
+  --hf-sidebar-active-text: #845adf;
+  --hf-header: #ffffff;
   --hf-card-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
   --hf-card-shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.05);
 }
@@ -3386,8 +3440,8 @@ body {
 body {
   margin: 0;
   background:
-    radial-gradient(circle at top left, rgba(59, 130, 246, 0.12), transparent 28%),
-    radial-gradient(circle at top right, rgba(14, 165, 233, 0.08), transparent 26%),
+    radial-gradient(circle at top left, rgba(132, 90, 223, 0.12), transparent 28%),
+    radial-gradient(circle at top right, rgba(35, 183, 229, 0.10), transparent 24%),
     var(--hf-surface-alt);
   color: var(--hf-foreground);
   font-family: var(--hf-font);
@@ -3495,6 +3549,177 @@ tbody tr:hover {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+.hf-page-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 2rem;
+}
+
+.hf-detail-shell {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.hf-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.hf-back-link {
+  color: #64748b;
+  text-decoration: none;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.hf-detail-title {
+  margin: 0;
+  font-size: 1.35rem;
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.hf-code-pill {
+  border-radius: 8px;
+  border: 1px solid var(--hf-border);
+  background: var(--hf-surface-muted);
+  color: #475569;
+  padding: 2px 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.hf-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+.hf-card {
+  border-radius: 14px;
+  border: 1px solid var(--hf-border);
+  background: var(--hf-surface);
+  box-shadow: var(--hf-card-shadow-soft);
+  padding: 0.95rem 1rem;
+}
+
+.hf-card-title {
+  margin: 0 0 0.7rem;
+  color: #0f172a;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.hf-section-label {
+  margin: 0 0 0.7rem;
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.hf-detail-row {
+  display: flex;
+  gap: 0.45rem;
+  margin-bottom: 0.45rem;
+}
+
+.hf-detail-key {
+  width: 110px;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.hf-detail-value {
+  color: #0f172a;
+  font-size: 0.84rem;
+  flex: 1;
+}
+
+.hf-form-shell {
+  display: grid;
+  gap: 0.95rem;
+  max-width: 760px;
+}
+
+.hf-form-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.hf-form-label {
+  color: #374151;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.hf-form-input,
+.hf-form-select,
+.hf-form-textarea {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--hf-border);
+  padding: 0.5rem 0.72rem;
+  font-size: 0.86rem;
+  background: var(--hf-surface);
+}
+
+.hf-form-textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.hf-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.hf-primary-btn {
+  border: 1px solid transparent;
+  background: var(--hf-primary);
+  color: #fff;
+  border-radius: 10px;
+  padding: 0.52rem 0.9rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.hf-primary-btn:hover {
+  background: var(--hf-primary-hover);
+}
+
+.hf-secondary-btn {
+  border: 1px solid var(--hf-border);
+  background: var(--hf-surface);
+  color: #1f2937;
+  border-radius: 10px;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.hf-page-error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  padding: 0.6rem 0.75rem;
+}
+
+@media (max-width: 960px) {
+  .hf-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
 `;
 }
 
@@ -3527,65 +3752,46 @@ export default function App() {
 }
 
 function uiLandingRoute(): string {
-  return `import { useState } from 'react';
-import { useNavigate } from 'react-router';
+  return `const PORTAL_URL =
+  (import.meta as { env?: Record<string, string> }).env?.['VITE_PORTAL_URL']
+  ?? 'http://localhost:3001';
 
-const API = (import.meta as { env?: Record<string, string> }).env?.['VITE_API_URL'] ?? 'http://localhost:4000';
-
-export default function LoginPage() {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState('admin@local-demo.com');
-  const [password, setPassword] = useState('Password1!');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    const res = await fetch(API + '/auth/login', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!res.ok) {
-      setLoading(false);
-      setError('Invalid credentials or API unavailable.');
-      return;
-    }
-
-    const data = (await res.json()) as { token: string; tenantId: string | null };
-    localStorage.setItem('token', data.token);
-    if (data.tenantId) localStorage.setItem('tenantId', data.tenantId);
-    setLoading(false);
-    navigate('/dashboard');
-  }
-
+export default function IndexRoute() {
   return (
-  ? (process.env['PORTAL_URL'] ?? 'http://localhost:3001')
-  : 'http://localhost:3001';
-
-        <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1.5rem' }}>Sign in with database credentials.</p>
-        <form onSubmit={onSubmit}>
     <main style={{ minHeight: '100vh', background: '#fff', color: '#111827', fontFamily: 'system-ui, sans-serif' }}>
-      <nav style={{ borderBottom: '1px solid #f3f4f6', padding: '0 1.5rem', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: 1200, margin: '0 auto' }}>
-            <input value={email} onChange={(e) => setEmail(e.currentTarget.value)} type="email" name="email" required style={{ width: '100%', padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 8, boxSizing: 'border-box' }} />
-        <a href={PORTAL_URL} style={{ fontSize: 14, background: '#2563eb', color: '#fff', padding: '6px 16px', borderRadius: 8, textDecoration: 'none' }}>
-          <div style={{ marginBottom: '1rem' }}>
+      <nav
+        style={{
+          borderBottom: '1px solid #f3f4f6',
+          padding: '0 1.5rem',
+          height: 56,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          maxWidth: 1200,
+          margin: '0 auto',
+        }}
+      >
+        <strong>HubForge</strong>
+        <a
+          href={PORTAL_URL}
+          style={{ fontSize: 14, background: '#2563eb', color: '#fff', padding: '6px 16px', borderRadius: 8, textDecoration: 'none' }}
+        >
+          Open Portal
         </a>
-            <input value={password} onChange={(e) => setPassword(e.currentTarget.value)} type="password" name="password" required style={{ width: '100%', padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: 8, boxSizing: 'border-box' }} />
+      </nav>
+
       <section style={{ maxWidth: 800, margin: '0 auto', padding: '6rem 1.5rem 4rem', textAlign: 'center' }}>
-          {error && <p style={{ color: '#dc2626', fontSize: '0.8rem', marginBottom: '0.75rem' }}>{error}</p>}
-          <button disabled={loading} type="submit" style={{ width: '100%', background: '#2563eb', color: '#fff', padding: 10, borderRadius: 8, border: 'none', fontWeight: 500, cursor: 'pointer' }}>
-            {loading ? 'Signing in...' : 'Sign in'}
-        </p>
+        <p style={{ letterSpacing: 1, textTransform: 'uppercase', color: '#2563eb', fontSize: 12, marginBottom: 16 }}>FutureEdge Platform</p>
         <h1 style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', fontWeight: 700, lineHeight: 1.05, marginBottom: '1.5rem' }}>
-        <p style={{ marginTop: '1rem', fontSize: '0.75rem', color: '#9ca3af', textAlign: 'center' }}>Default: admin@local-demo.com / Password1!</p>
+          Build and ship your SaaS foundation faster.
+        </h1>
+        <p style={{ color: '#4b5563', fontSize: '1.125rem', lineHeight: 1.6, marginBottom: 32 }}>
           Opinionated baseline with API, portal, AI, Docker, tenancy, and migrations already in place.
         </p>
-        <a href={PORTAL_URL} style={{ display: 'inline-block', background: '#2563eb', color: '#fff', fontSize: '1.125rem', padding: '12px 32px', borderRadius: 12, textDecoration: 'none' }}>
+        <a
+          href={PORTAL_URL}
+          style={{ display: 'inline-block', background: '#2563eb', color: '#fff', fontSize: '1.125rem', padding: '12px 32px', borderRadius: 12, textDecoration: 'none' }}
+        >
           Get started
         </a>
       </section>
@@ -3748,6 +3954,7 @@ export function getPortalMenuSections(authServerEnabled = false): PortalMenuSect
         { id: 'assistant', label: 'AI Assistant', route: '/assistant', permissions: ['ai-assistant:read'] },
         { id: 'jobs', label: 'Background Jobs', route: '/jobs', permissions: ['jobs:read'] },
         { id: 'notifications', label: 'Notifications', route: '/notifications', permissions: ['notifications:read'] },
+        { id: 'logs', label: 'Logs', route: '/logs', permissions: ['logs:read'] },
       ],
     },
     {
@@ -3757,6 +3964,7 @@ export function getPortalMenuSections(authServerEnabled = false): PortalMenuSect
         { id: 'audit-log', label: 'Audit Log', route: '/audit-log' },
         { id: 'modules', label: 'Modules', route: '/settings/modules', moduleId: 'modules' },
         { id: 'settings', label: 'Settings', route: '/settings' },
+        { id: 'logging-settings', label: 'Logging Settings', route: '/settings/logging', permissions: ['logs:manage'] },
         { id: 'email-account', label: 'Email Account', route: '/settings/email-account' },
         { id: 'theme', label: 'Theme', route: '/settings/theme' },
         ...(authServerEnabled ? [{ id: 'auth-server', label: 'Auth Server', route: '/settings/auth-server' }] : []),
@@ -3847,19 +4055,23 @@ function dbPackageJson(): string {
     type: 'module',
     scripts: {
       'db:bootstrap': 'node ./scripts/bootstrap-postgres.mjs',
-      'db:migrate': 'prisma migrate dev --name init --schema prisma/schema.prisma',
-      'db:generate': 'prisma generate --schema prisma/schema.prisma',
-      'db:seed': 'node ./scripts/seed.mjs',
+      'db:generate': 'drizzle-kit generate',
+      'db:migrate': 'drizzle-kit migrate',
+      'db:seed': 'tsx ./scripts/seed.ts',
       build: 'tsc -p tsconfig.json --pretty false --noEmit',
       typecheck: 'tsc -p tsconfig.json --pretty false --noEmit',
     },
     dependencies: {
-      '@prisma/client': '^5.16.0',
+      'drizzle-orm': '^0.41.0',
+      'better-sqlite3': '^11.0.0',
+      postgres: '^3.4.5',
       pg: '^8.13.1',
     },
     devDependencies: {
+      '@types/better-sqlite3': '^7.6.13',
       '@types/node': '^20.0.0',
-      prisma: '^5.16.0',
+      'drizzle-kit': '^0.30.0',
+      tsx: '^4.9.0',
       typescript: '^5.4.0',
     },
   };
@@ -4002,6 +4214,178 @@ async function startWorker() {
 }
 
 void startWorker();
+`;
+}
+
+function jobServicePackageJson(): string {
+  const pkg = {
+    name: '@hubforge/job-service',
+    version: '0.1.0',
+    private: true,
+    type: 'module',
+    scripts: {
+      dev: 'tsx watch src/worker.ts',
+      build: 'tsc -p tsconfig.json',
+      typecheck: 'tsc --noEmit -p tsconfig.json',
+      start: 'node dist/worker.js',
+    },
+    dependencies: {
+      '@hubforge/db': 'workspace:*',
+      bullmq: '^5.58.5',
+      ioredis: '^5.4.1',
+    },
+    devDependencies: {
+      '@types/node': '^20.0.0',
+      tsx: '^4.9.0',
+      typescript: '^5.4.0',
+    },
+  };
+
+  return `${JSON.stringify(pkg, null, 2)}\n`;
+}
+
+function jobServiceTsConfig(): string {
+  return `{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "../..",
+    "baseUrl": ".",
+    "paths": {
+      "@hubforge/db": ["../../packages/db/src/index.ts"]
+    },
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  },
+  "include": ["src", "../../packages/db/src"]
+}
+`;
+}
+
+function jobServiceWorkerTs(): string {
+  return `import { Queue, Worker } from 'bullmq';
+import IORedis from 'ioredis';
+import { JobService, LogService } from '@hubforge/db';
+
+const queueName = process.env['JOB_SERVICE_QUEUE'] ?? 'hubforge-job-service';
+const redisUrl = process.env['REDIS_URL'] ?? 'redis://localhost:6379';
+const connection = new IORedis(redisUrl, { maxRetriesPerRequest: null });
+const queue = new Queue(queueName, { connection });
+
+type QueuePayload = { dbJobId: string };
+
+function parsePayload(input: string | null): unknown {
+  if (!input) return null;
+  try {
+    return JSON.parse(input);
+  } catch {
+    return input;
+  }
+}
+
+async function handleBusinessJob(dbJobId: string): Promise<void> {
+  const job = await JobService.getById(dbJobId, null);
+  if (!job) return;
+
+  if (job.status !== 'queued' && job.status !== 'running') {
+    return;
+  }
+
+  await JobService.markRunning(job.id);
+
+  try {
+    if (job.jobType === 'logging.cleanup') {
+      const purged = await LogService.purgeUsingTenantSettings();
+      await JobService.markCompleted(job.id, { purged });
+      return;
+    }
+
+    const payload = parsePayload(job.payload);
+    await JobService.markCompleted(job.id, {
+      ok: true,
+      processedBy: '@hubforge/job-service',
+      jobType: job.jobType,
+      payload,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    await JobService.markFailed(job.id, message);
+  }
+}
+
+async function enqueueQueuedJobs(): Promise<number> {
+  let count = 0;
+  while (true) {
+    const claimed = await JobService.claimNextJob();
+    if (!claimed) break;
+
+    await queue.add('run', { dbJobId: claimed.id }, {
+      jobId: claimed.id,
+      removeOnComplete: true,
+      removeOnFail: 100,
+      attempts: 5,
+      backoff: { type: 'exponential', delay: 1_000 },
+    });
+    count += 1;
+  }
+  return count;
+}
+
+async function enqueueScheduledJobs(): Promise<number> {
+  const due = await JobService.listDueSchedules(new Date());
+  for (const schedule of due) {
+    const queued = await JobService.enqueue({
+      tenantId: schedule.tenantId,
+      scheduleId: schedule.id,
+      jobType: schedule.jobType,
+      payload: schedule.payload ? parsePayload(schedule.payload) : null,
+      priority: 1,
+      scheduledFor: new Date(),
+    });
+
+    await JobService.touchScheduleRun(schedule.id, new Date(Date.now() + 5 * 60 * 1000));
+    await queue.add('run', { dbJobId: queued.id }, { jobId: queued.id, removeOnComplete: true, removeOnFail: 100 });
+  }
+  return due.length;
+}
+
+async function ensureRetentionSweepJob(): Promise<void> {
+  const existing = (await JobService.list(null)).find(
+    (job: { jobType: string; status: string }) =>
+      job.jobType === 'logging.cleanup' && (job.status === 'queued' || job.status === 'running'),
+  );
+  if (!existing) {
+    await JobService.enqueue({ tenantId: null, jobType: 'logging.cleanup', priority: 10 });
+  }
+}
+
+const worker = new Worker<QueuePayload>(
+  queueName,
+  async (job) => {
+    await handleBusinessJob(job.data.dbJobId);
+  },
+  { connection },
+);
+
+worker.on('failed', (_job, error) => {
+  console.error('[job-service] worker job failed', error.message);
+});
+
+async function loop() {
+  const scheduled = await enqueueScheduledJobs();
+  const queued = await enqueueQueuedJobs();
+  await ensureRetentionSweepJob();
+  if (scheduled > 0 || queued > 0) {
+    console.log(\`[job-service] scheduled=\${scheduled} queued=\${queued}\`);
+  }
+}
+
+console.log('[job-service] started', { queueName, redisUrl });
+void loop();
+setInterval(() => {
+  void loop();
+}, 5000);
 `;
 }
 
@@ -4157,32 +4541,49 @@ bootstrapPostgres().catch((error) => {
 `;
 }
 
-function dbIndexTs(): string {
-  return `import { PrismaClient } from '@prisma/client';
+function dbIndexTs(options: InitScaffoldOptions): string {
+  if (options.dbProvider === 'sqlite') {
+    return `import Database from 'better-sqlite3';
+import { drizzle } from 'drizzle-orm/better-sqlite3';
+import * as schema from './schema.js';
 
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+const _dbUrl = process.env['DATABASE_URL'] ?? './dev.db';
+const _dbPath = _dbUrl.startsWith('file:') ? _dbUrl.slice(5) : _dbUrl;
+const sqlite = new Database(_dbPath);
+export const db = drizzle(sqlite, { schema });
 
-export const prisma: PrismaClient =
-  globalForPrisma.prisma
-  ?? new PrismaClient({
-    log: process.env['NODE_ENV'] === 'development' ? ['error', 'warn'] : ['error'],
-  });
-
-if (process.env['NODE_ENV'] !== 'production') {
-  globalForPrisma.prisma = prisma;
-}
-
-export { PrismaClient };
+export * from './schema.js';
 export { SettingsService, type SettingValue } from './settings.js';
 export { NotificationService } from './notifications.js';
 export { PermissionRegistry } from './permissions.js';
 export { BillingService, type BillingSubscriptionStatus } from './billing.js';
 export { JobService } from './jobs.js';
+export { LogService, type LogLevel, type LoggingSettings } from './logging.js';
+export { RbacService } from './rbac.js';
+`;
+  }
+  return `import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import * as schema from './schema.js';
+
+const client = postgres(process.env['DATABASE_URL']!);
+export const db = drizzle(client, { schema });
+
+export * from './schema.js';
+export { SettingsService, type SettingValue } from './settings.js';
+export { NotificationService } from './notifications.js';
+export { PermissionRegistry } from './permissions.js';
+export { BillingService, type BillingSubscriptionStatus } from './billing.js';
+export { JobService } from './jobs.js';
+export { LogService, type LogLevel, type LoggingSettings } from './logging.js';
+export { RbacService } from './rbac.js';
 `;
 }
 
 function dbSettingsTs(): string {
-  return `import { prisma } from './index.js';
+  return `import { db } from './index.js';
+import { settings } from './schema.js';
+import { eq, and, desc, asc, isNull } from 'drizzle-orm';
 
 export type SettingValue = string | number | boolean | object | null;
 export type SettingScope = 'tenant' | 'environment' | 'system';
@@ -4219,19 +4620,24 @@ export class SettingsService {
   ): Promise<SettingValue> {
     const scope = resolveScope(tenantId, options?.scope);
     const environmentId = options?.environmentId ?? null;
-    const setting = await (prisma.setting.findFirst as any)({
-      where: {
-        tenantId: tenantId ?? null,
-        environmentId,
-        scope,
-        module,
-        key,
-      },
-      orderBy: { createdAt: 'desc' },
+
+    function buildSettingWhere(tId: string | undefined | null, envId: string | null, sc: SettingScope, mod?: string, k?: string) {
+      return and(
+        tId != null ? eq(settings.tenantId, tId) : isNull(settings.tenantId),
+        envId != null ? eq(settings.environmentId, envId) : isNull(settings.environmentId),
+        eq(settings.scope, sc),
+        mod != null ? eq(settings.module, mod) : undefined,
+        k != null ? eq(settings.key, k) : undefined,
+      );
+    }
+
+    const row = await db.query.settings.findFirst({
+      where: buildSettingWhere(tenantId, environmentId, scope, module, key),
+      orderBy: [desc(settings.createdAt)],
     });
 
-    if (!setting) return defaultValue;
-    return parseSettingValue(setting, defaultValue);
+    if (!row) return defaultValue;
+    return parseSettingValue(row, defaultValue);
   }
 
   static async set(
@@ -4246,37 +4652,38 @@ export class SettingsService {
     const dataType =
       typeof value === 'number' ? 'number' : typeof value === 'boolean' ? 'boolean' : typeof value === 'object' ? 'json' : 'string';
     const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
+    const now = new Date();
 
-    const existing = await (prisma.setting.findFirst as any)({
-      where: {
-        tenantId: tenantId ?? null,
-        environmentId,
-        scope,
-        module,
-        key,
-      },
-      select: { id: true },
-      orderBy: { createdAt: 'desc' },
+    function buildSettingWhere(tId: string | undefined | null, envId: string | null, sc: SettingScope, mod?: string, k?: string) {
+      return and(
+        tId != null ? eq(settings.tenantId, tId) : isNull(settings.tenantId),
+        envId != null ? eq(settings.environmentId, envId) : isNull(settings.environmentId),
+        eq(settings.scope, sc),
+        mod != null ? eq(settings.module, mod) : undefined,
+        k != null ? eq(settings.key, k) : undefined,
+      );
+    }
+
+    const existing = await db.query.settings.findFirst({
+      where: buildSettingWhere(tenantId, environmentId, scope, module, key),
+      columns: { id: true },
+      orderBy: [desc(settings.createdAt)],
     });
 
     if (existing) {
-      await (prisma.setting.update as any)({
-        where: { id: existing.id },
-        data: { value: stringValue, dataType, updatedAt: new Date() },
-      });
+      await db.update(settings).set({ value: stringValue, dataType, updatedAt: now }).where(eq(settings.id, existing.id));
       return;
     }
 
-    await (prisma.setting.create as any)({
-      data: {
-        tenantId: tenantId ?? null,
-        environmentId,
-        scope,
-        module,
-        key,
-        value: stringValue,
-        dataType,
-      },
+    await db.insert(settings).values({
+      tenantId: tenantId ?? null,
+      environmentId,
+      scope,
+      module,
+      key,
+      value: stringValue,
+      dataType,
+      updatedAt: now,
     });
   }
 
@@ -4288,15 +4695,13 @@ export class SettingsService {
   ): Promise<void> {
     const scope = resolveScope(tenantId, options?.scope);
     const environmentId = options?.environmentId ?? null;
-    await (prisma.setting.deleteMany as any)({
-      where: {
-        tenantId: tenantId ?? null,
-        environmentId,
-        scope,
-        module,
-        key,
-      },
-    });
+    await db.delete(settings).where(and(
+      tenantId != null ? eq(settings.tenantId, tenantId) : isNull(settings.tenantId),
+      environmentId != null ? eq(settings.environmentId, environmentId) : isNull(settings.environmentId),
+      eq(settings.scope, scope),
+      eq(settings.module, module),
+      eq(settings.key, key),
+    ));
   }
 
   static async list(
@@ -4306,15 +4711,14 @@ export class SettingsService {
   ) {
     const scope = resolveScope(tenantId, options?.scope);
     const environmentId = options?.environmentId ?? null;
-    return (prisma.setting.findMany as any)({
-      where: {
-        tenantId: tenantId ?? null,
-        environmentId,
-        scope,
-        module,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    return db.select().from(settings)
+      .where(and(
+        tenantId != null ? eq(settings.tenantId, tenantId) : isNull(settings.tenantId),
+        environmentId != null ? eq(settings.environmentId, environmentId) : isNull(settings.environmentId),
+        eq(settings.scope, scope),
+        eq(settings.module, module),
+      ))
+      .orderBy(desc(settings.createdAt));
   }
 
   static async getAll(
@@ -4322,9 +4726,9 @@ export class SettingsService {
     module: string,
     options?: { environmentId?: string | null; scope?: SettingScope },
   ): Promise<Record<string, SettingValue>> {
-    const settings = await this.list(tenantId, module, options);
+    const rows = await this.list(tenantId, module, options);
     const result: Record<string, SettingValue> = {};
-    for (const item of settings) {
+    for (const item of rows) {
       result[item.key] = parseSettingValue(item, null);
     }
     return result;
@@ -4336,25 +4740,25 @@ export class SettingsService {
   ): Promise<string[]> {
     const scope = resolveScope(tenantId, options?.scope);
     const environmentId = options?.environmentId ?? null;
-    const rows = await (prisma.setting.findMany as any)({
-      where: {
-        tenantId: tenantId ?? null,
-        environmentId,
-        scope,
-      },
-      select: { module: true },
-      distinct: ['module'],
-      orderBy: { module: 'asc' },
-    });
+    const rows = await db.selectDistinct({ module: settings.module })
+      .from(settings)
+      .where(and(
+        tenantId != null ? eq(settings.tenantId, tenantId) : isNull(settings.tenantId),
+        environmentId != null ? eq(settings.environmentId, environmentId) : isNull(settings.environmentId),
+        eq(settings.scope, scope),
+      ))
+      .orderBy(asc(settings.module));
 
-    return rows.map((row: { module: string }) => row.module);
+    return rows.map(row => row.module);
   }
 }
 `;
 }
 
 function dbPermissionsTs(): string {
-  return `import { prisma } from './index.js';
+  return `import { db } from './index.js';
+import { permissions } from './schema.js';
+import { eq, and } from 'drizzle-orm';
 
 type Definition = { module: string; action: string; description?: string };
 
@@ -4377,12 +4781,14 @@ const defaults: Definition[] = [
 
 export class PermissionRegistry {
   static async syncToDatabase(): Promise<void> {
+    const now = new Date();
     for (const perm of defaults) {
-      await (prisma.permission.upsert as any)({
-        where: { module_action: { module: perm.module, action: perm.action } },
-        update: perm.description ? { description: perm.description } : {},
-        create: perm,
-      });
+      await db.insert(permissions)
+        .values({ module: perm.module, action: perm.action, description: perm.description ?? null, updatedAt: now })
+        .onConflictDoUpdate({
+          target: [permissions.module, permissions.action],
+          set: { description: perm.description ?? null, updatedAt: now },
+        });
     }
   }
 }
@@ -4390,7 +4796,9 @@ export class PermissionRegistry {
 }
 
 function dbNotificationsTs(): string {
-  return `import { prisma } from './index.js';
+  return `import { db } from './index.js';
+import { notificationTemplates, notificationDeliveries } from './schema.js';
+import { eq, desc } from 'drizzle-orm';
 
 export type NotificationTemplateInput = {
   tenantId: string;
@@ -4416,30 +4824,21 @@ export type NotificationDeliveryInput = {
 
 export class NotificationService {
   static async listTemplates(tenantId: string) {
-    return prisma.notificationTemplate.findMany({
-      where: { tenantId },
-      orderBy: [{ updatedAt: 'desc' }],
-    });
+    return db.select().from(notificationTemplates)
+      .where(eq(notificationTemplates.tenantId, tenantId))
+      .orderBy(desc(notificationTemplates.updatedAt));
   }
 
   static async getTemplateByKey(key: string, tenantId: string) {
-    return prisma.notificationTemplate.findFirst({
-      where: { tenantId, key },
+    return db.query.notificationTemplates.findFirst({
+      where: (t, { and: _and, eq: _eq }) => _and(_eq(t.tenantId, tenantId), _eq(t.key, key)),
     });
   }
 
   static async upsertTemplate(input: NotificationTemplateInput) {
-    return prisma.notificationTemplate.upsert({
-      where: { tenantId_key: { tenantId: input.tenantId, key: input.key } },
-      update: {
-        channel: input.channel,
-        provider: input.provider ?? null,
-        subject: input.subject ?? null,
-        body: input.body,
-        isActive: input.isActive ?? true,
-        variablesSchema: input.variablesSchema == null ? null : JSON.stringify(input.variablesSchema),
-      },
-      create: {
+    const now = new Date();
+    const [row] = await db.insert(notificationTemplates)
+      .values({
         tenantId: input.tenantId,
         key: input.key,
         channel: input.channel,
@@ -4448,71 +4847,89 @@ export class NotificationService {
         body: input.body,
         isActive: input.isActive ?? true,
         variablesSchema: input.variablesSchema == null ? null : JSON.stringify(input.variablesSchema),
-      },
-    });
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: [notificationTemplates.tenantId, notificationTemplates.key],
+        set: {
+          channel: input.channel,
+          provider: input.provider ?? null,
+          subject: input.subject ?? null,
+          body: input.body,
+          isActive: input.isActive ?? true,
+          variablesSchema: input.variablesSchema == null ? null : JSON.stringify(input.variablesSchema),
+          updatedAt: now,
+        },
+      })
+      .returning();
+    return row;
   }
 
   static async deleteTemplate(id: string, tenantId: string) {
-    return prisma.notificationTemplate.deleteMany({
-      where: { id, tenantId },
-    });
+    return db.delete(notificationTemplates)
+      .where(eq(notificationTemplates.id, id))
+      .returning();
   }
 
   static async listDeliveries(tenantId: string, limit = 50) {
-    return prisma.notificationDelivery.findMany({
-      where: { tenantId },
-      orderBy: [{ createdAt: 'desc' }],
-      take: limit,
-      include: { template: true },
-    });
+    const rows = await db.select().from(notificationDeliveries)
+      .leftJoin(notificationTemplates, eq(notificationDeliveries.templateId, notificationTemplates.id))
+      .where(eq(notificationDeliveries.tenantId, tenantId))
+      .orderBy(desc(notificationDeliveries.createdAt))
+      .limit(limit);
+    return rows.map(r => ({ ...r.notificationDeliveries, template: r.notificationTemplates }));
   }
 
   static async createDelivery(input: NotificationDeliveryInput) {
-    return prisma.notificationDelivery.create({
-      data: {
-        tenantId: input.tenantId,
-        templateId: input.templateId ?? null,
-        channel: input.channel,
-        provider: input.provider ?? null,
-        recipient: input.recipient,
-        subject: input.subject ?? null,
-        body: input.body,
-        payload: input.payload == null ? null : JSON.stringify(input.payload),
-        status: 'queued',
-      },
-    });
+    const [row] = await db.insert(notificationDeliveries).values({
+      tenantId: input.tenantId,
+      templateId: input.templateId ?? null,
+      channel: input.channel,
+      provider: input.provider ?? null,
+      recipient: input.recipient,
+      subject: input.subject ?? null,
+      body: input.body,
+      payload: input.payload == null ? null : JSON.stringify(input.payload),
+      status: 'queued',
+      updatedAt: new Date(),
+    }).returning();
+    return row;
   }
 
   static async markDeliverySent(id: string, result: { provider: string; externalMessageId: string }) {
-    return prisma.notificationDelivery.update({
-      where: { id },
-      data: {
-        provider: result.provider,
-        externalMessageId: result.externalMessageId,
-        status: 'sent',
-        error: null,
-        sentAt: new Date(),
-      },
-      include: { template: true },
-    });
+    const now = new Date();
+    await db.update(notificationDeliveries).set({
+      provider: result.provider,
+      externalMessageId: result.externalMessageId,
+      status: 'sent',
+      error: null,
+      sentAt: now,
+      updatedAt: now,
+    }).where(eq(notificationDeliveries.id, id));
+    const rows = await db.select().from(notificationDeliveries)
+      .leftJoin(notificationTemplates, eq(notificationDeliveries.templateId, notificationTemplates.id))
+      .where(eq(notificationDeliveries.id, id))
+      .limit(1);
+    return rows[0] ? { ...rows[0].notificationDeliveries, template: rows[0].notificationTemplates } : null;
   }
 
   static async markDeliveryFailed(id: string, errorMessage: string) {
-    return prisma.notificationDelivery.update({
-      where: { id },
-      data: {
-        status: 'failed',
-        error: errorMessage,
-      },
-      include: { template: true },
-    });
+    const now = new Date();
+    await db.update(notificationDeliveries).set({ status: 'failed', error: errorMessage, updatedAt: now }).where(eq(notificationDeliveries.id, id));
+    const rows = await db.select().from(notificationDeliveries)
+      .leftJoin(notificationTemplates, eq(notificationDeliveries.templateId, notificationTemplates.id))
+      .where(eq(notificationDeliveries.id, id))
+      .limit(1);
+    return rows[0] ? { ...rows[0].notificationDeliveries, template: rows[0].notificationTemplates } : null;
   }
 }
 `;
 }
 
 function dbBillingTs(): string {
-  return `import { prisma } from './index.js';
+  return `import { db } from './index.js';
+import { billingCustomers, billingSubscriptions, billingEvents } from './schema.js';
+import { eq, desc, and } from 'drizzle-orm';
 
 export type BillingSubscriptionStatus =
   | 'trialing'
@@ -4552,58 +4969,35 @@ export type BillingEventInput = {
 
 export class BillingService {
   static async listSubscriptions(tenantId: string) {
-    return prisma.billingSubscription.findMany({
-      where: { tenantId },
-      include: { customer: true },
-      orderBy: [{ updatedAt: 'desc' }],
-    });
+    const rows = await db.select().from(billingSubscriptions)
+      .leftJoin(billingCustomers, eq(billingSubscriptions.customerId, billingCustomers.id))
+      .where(eq(billingSubscriptions.tenantId, tenantId))
+      .orderBy(desc(billingSubscriptions.updatedAt));
+    return rows.map(r => ({ ...r.billingSubscriptions, customer: r.billingCustomers }));
   }
 
   static async upsertSubscriptionLifecycle(input: BillingLifecycleInput) {
-    const customer = await prisma.billingCustomer.upsert({
-      where: {
-        tenantId_provider_externalCustomerId: {
-          tenantId: input.tenantId,
-          provider: input.provider,
-          externalCustomerId: input.externalCustomerId,
-        },
-      },
-      update: {
-        email: input.customerEmail ?? null,
-        name: input.customerName ?? null,
-      },
-      create: {
+    const now = new Date();
+    const [customer] = await db.insert(billingCustomers)
+      .values({
         tenantId: input.tenantId,
         provider: input.provider,
         externalCustomerId: input.externalCustomerId,
         email: input.customerEmail ?? null,
         name: input.customerName ?? null,
-      },
-    });
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: [billingCustomers.tenantId, billingCustomers.provider, billingCustomers.externalCustomerId],
+        set: { email: input.customerEmail ?? null, name: input.customerName ?? null, updatedAt: now },
+      })
+      .returning();
 
-    const cancelledAt = input.status === 'canceled' ? new Date() : null;
+    const cancelledAt = input.status === 'canceled' ? now : null;
     const metadata = input.metadata == null ? null : JSON.stringify(input.metadata);
 
-    return prisma.billingSubscription.upsert({
-      where: {
-        tenantId_provider_externalSubscriptionId: {
-          tenantId: input.tenantId,
-          provider: input.provider,
-          externalSubscriptionId: input.externalSubscriptionId,
-        },
-      },
-      update: {
-        customerId: customer.id,
-        planCode: input.planCode,
-        status: input.status,
-        currency: input.currency,
-        cancelAtPeriodEnd: input.cancelAtPeriodEnd ?? false,
-        currentPeriodStart: input.currentPeriodStart ?? null,
-        currentPeriodEnd: input.currentPeriodEnd ?? null,
-        metadata,
-        cancelledAt,
-      },
-      create: {
+    const [sub] = await db.insert(billingSubscriptions)
+      .values({
         tenantId: input.tenantId,
         customerId: customer.id,
         provider: input.provider,
@@ -4616,32 +5010,47 @@ export class BillingService {
         currentPeriodEnd: input.currentPeriodEnd ?? null,
         metadata,
         cancelledAt,
-      },
-      include: {
-        customer: true,
-      },
-    });
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: [billingSubscriptions.tenantId, billingSubscriptions.provider, billingSubscriptions.externalSubscriptionId],
+        set: {
+          customerId: customer.id,
+          planCode: input.planCode,
+          status: input.status,
+          currency: input.currency,
+          cancelAtPeriodEnd: input.cancelAtPeriodEnd ?? false,
+          currentPeriodStart: input.currentPeriodStart ?? null,
+          currentPeriodEnd: input.currentPeriodEnd ?? null,
+          metadata,
+          cancelledAt,
+          updatedAt: now,
+        },
+      })
+      .returning();
+    return { ...sub, customer };
   }
 
   static async recordEvent(input: BillingEventInput) {
-    return prisma.billingEvent.create({
-      data: {
-        tenantId: input.tenantId,
-        provider: input.provider,
-        eventType: input.eventType,
-        externalEventId: input.externalEventId ?? null,
-        payload: JSON.stringify(input.payload),
-        status: input.status,
-        error: input.error ?? null,
-      },
-    });
+    const [row] = await db.insert(billingEvents).values({
+      tenantId: input.tenantId,
+      provider: input.provider,
+      eventType: input.eventType,
+      externalEventId: input.externalEventId ?? null,
+      payload: JSON.stringify(input.payload),
+      status: input.status,
+      error: input.error ?? null,
+    }).returning();
+    return row;
   }
 }
 `;
 }
 
 function dbJobsTs(): string {
-  return `import { prisma } from './index.js';
+  return `import { db } from './index.js';
+import { backgroundJobs, jobSchedules } from './schema.js';
+import { eq, desc, asc, and, or, lte, isNull } from 'drizzle-orm';
 
 export type JobInput = {
   tenantId: string | null;
@@ -4667,149 +5076,128 @@ export type JobScheduleInput = {
 
 export class JobService {
   static async enqueue(input: JobInput) {
-    return prisma.backgroundJob.create({
-      data: {
-        tenantId: input.tenantId,
-        scheduleId: input.scheduleId ?? null,
-        jobType: input.jobType,
-        status: 'queued',
-        priority: input.priority ?? 0,
-        maxAttempts: input.maxAttempts ?? 3,
-        scheduledFor: input.scheduledFor ?? null,
-        payload: input.payload == null ? null : JSON.stringify(input.payload),
-        createdBy: input.createdBy ?? null,
-      },
-    });
+    const [job] = await db.insert(backgroundJobs).values({
+      tenantId: input.tenantId,
+      scheduleId: input.scheduleId ?? null,
+      jobType: input.jobType,
+      status: 'queued',
+      priority: input.priority ?? 0,
+      maxAttempts: input.maxAttempts ?? 3,
+      scheduledFor: input.scheduledFor ?? null,
+      payload: input.payload == null ? null : JSON.stringify(input.payload),
+      createdBy: input.createdBy ?? null,
+      updatedAt: new Date(),
+    }).returning();
+    return job;
   }
 
   static async list(tenantId: string | null) {
-    return prisma.backgroundJob.findMany({
-      where: tenantId ? { tenantId } : {},
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-      include: {
-        schedule: true,
-      },
-    });
+    const rows = await db.select().from(backgroundJobs)
+      .leftJoin(jobSchedules, eq(backgroundJobs.scheduleId, jobSchedules.id))
+      .where(tenantId ? eq(backgroundJobs.tenantId, tenantId) : undefined)
+      .orderBy(desc(backgroundJobs.createdAt))
+      .limit(100);
+    return rows.map(r => ({ ...r.backgroundJobs, schedule: r.jobSchedules }));
   }
 
   static async getById(jobId: string, tenantId: string | null) {
-    return prisma.backgroundJob.findFirst({
-      where: {
-        id: jobId,
-        ...(tenantId ? { tenantId } : {}),
-      },
-      include: {
-        schedule: true,
-      },
-    });
+    const rows = await db.select().from(backgroundJobs)
+      .leftJoin(jobSchedules, eq(backgroundJobs.scheduleId, jobSchedules.id))
+      .where(and(eq(backgroundJobs.id, jobId), tenantId ? eq(backgroundJobs.tenantId, tenantId) : undefined))
+      .limit(1);
+    const r = rows[0];
+    return r ? { ...r.backgroundJobs, schedule: r.jobSchedules } : null;
   }
 
   static async retry(jobId: string) {
-    return prisma.backgroundJob.update({
-      where: { id: jobId },
-      data: {
-        status: 'queued',
-        error: null,
-        nextRetry: null,
-        completedAt: null,
-      },
-    });
+    const [job] = await db.update(backgroundJobs).set({
+      status: 'queued',
+      error: null,
+      nextRetry: null,
+      completedAt: null,
+      updatedAt: new Date(),
+    }).where(eq(backgroundJobs.id, jobId)).returning();
+    return job;
   }
 
   static async cancel(jobId: string, tenantId: string | null) {
-    return prisma.backgroundJob.updateMany({
-      where: {
-        id: jobId,
-        ...(tenantId ? { tenantId } : {}),
-      },
-      data: {
-        status: 'cancelled',
-        completedAt: new Date(),
-        updatedAt: new Date(),
-      },
-    });
+    const result = await db.update(backgroundJobs).set({
+      status: 'cancelled',
+      completedAt: new Date(),
+      updatedAt: new Date(),
+    }).where(and(eq(backgroundJobs.id, jobId), tenantId ? eq(backgroundJobs.tenantId, tenantId) : undefined))
+      .returning({ id: backgroundJobs.id });
+    return { count: result.length };
   }
 
   static async markRunning(jobId: string) {
-    return prisma.backgroundJob.update({
-      where: { id: jobId },
-      data: {
-        status: 'running',
-      },
-    });
+    const [job] = await db.update(backgroundJobs).set({ status: 'running', updatedAt: new Date() })
+      .where(eq(backgroundJobs.id, jobId)).returning();
+    return job;
   }
 
   static async markCompleted(jobId: string, result?: unknown) {
-    return prisma.backgroundJob.update({
-      where: { id: jobId },
-      data: {
-        status: 'completed',
-        result: result == null ? null : JSON.stringify(result),
-        error: null,
-        completedAt: new Date(),
-      },
-    });
+    const [job] = await db.update(backgroundJobs).set({
+      status: 'completed',
+      result: result == null ? null : JSON.stringify(result),
+      error: null,
+      completedAt: new Date(),
+      updatedAt: new Date(),
+    }).where(eq(backgroundJobs.id, jobId)).returning();
+    return job;
   }
 
   static async markFailed(jobId: string, errorMessage: string) {
-    const job = await prisma.backgroundJob.findUnique({ where: { id: jobId } });
-    if (!job) return null;
-
-    const attempts = job.attempts + 1;
-    const hasRetries = attempts < job.maxAttempts;
-    return prisma.backgroundJob.update({
-      where: { id: jobId },
-      data: {
-        attempts,
-        status: hasRetries ? 'queued' : 'failed',
-        error: errorMessage,
-        nextRetry: hasRetries ? new Date(Date.now() + Math.pow(2, attempts) * 60000) : null,
-      },
-    });
+    const existing = await db.query.backgroundJobs.findFirst({ where: eq(backgroundJobs.id, jobId) });
+    if (!existing) return null;
+    const attempts = existing.attempts + 1;
+    const hasRetries = attempts < existing.maxAttempts;
+    const [job] = await db.update(backgroundJobs).set({
+      attempts,
+      status: hasRetries ? 'queued' : 'failed',
+      error: errorMessage,
+      nextRetry: hasRetries ? new Date(Date.now() + Math.pow(2, attempts) * 60000) : null,
+      updatedAt: new Date(),
+    }).where(eq(backgroundJobs.id, jobId)).returning();
+    return job;
   }
 
   static async claimNextJob() {
     const now = new Date();
-    const job = await prisma.backgroundJob.findFirst({
-      where: {
-        status: 'queued',
-        OR: [{ scheduledFor: null }, { scheduledFor: { lte: now } }],
-      },
-      orderBy: [{ priority: 'desc' }, { createdAt: 'asc' }],
+    const job = await db.query.backgroundJobs.findFirst({
+      where: and(
+        eq(backgroundJobs.status, 'queued'),
+        or(isNull(backgroundJobs.scheduledFor), lte(backgroundJobs.scheduledFor, now)),
+      ),
+      orderBy: [desc(backgroundJobs.priority), asc(backgroundJobs.createdAt)],
     });
-
     if (!job) return null;
-
-    const claimed = await prisma.backgroundJob.updateMany({
-      where: { id: job.id, status: 'queued' },
-      data: { status: 'running' },
-    });
-
-    if (claimed.count === 0) return null;
-    return prisma.backgroundJob.findUnique({ where: { id: job.id } });
+    const claimed = await db.update(backgroundJobs).set({ status: 'running', updatedAt: new Date() })
+      .where(and(eq(backgroundJobs.id, job.id), eq(backgroundJobs.status, 'queued')))
+      .returning({ id: backgroundJobs.id });
+    if (claimed.length === 0) return null;
+    return db.query.backgroundJobs.findFirst({ where: eq(backgroundJobs.id, job.id) });
   }
 
   static async listSchedules(tenantId: string) {
-    return prisma.jobSchedule.findMany({
-      where: { tenantId },
-      orderBy: [{ isActive: 'desc' }, { createdAt: 'desc' }],
-    });
+    return db.select().from(jobSchedules)
+      .where(eq(jobSchedules.tenantId, tenantId))
+      .orderBy(desc(jobSchedules.isActive), desc(jobSchedules.createdAt));
   }
 
   static async createSchedule(input: JobScheduleInput) {
-    return prisma.jobSchedule.create({
-      data: {
-        tenantId: input.tenantId,
-        name: input.name,
-        jobType: input.jobType,
-        cron: input.cron,
-        timezone: input.timezone ?? 'UTC',
-        payload: input.payload == null ? null : JSON.stringify(input.payload),
-        isActive: input.isActive ?? true,
-        nextRunAt: input.nextRunAt ?? null,
-      },
-    });
+    const [schedule] = await db.insert(jobSchedules).values({
+      tenantId: input.tenantId,
+      name: input.name,
+      jobType: input.jobType,
+      cron: input.cron,
+      timezone: input.timezone ?? 'UTC',
+      payload: input.payload == null ? null : JSON.stringify(input.payload),
+      isActive: input.isActive ?? true,
+      nextRunAt: input.nextRunAt ?? null,
+      updatedAt: new Date(),
+    }).returning();
+    return schedule;
   }
 
   static async updateSchedule(
@@ -4817,82 +5205,251 @@ export class JobService {
     tenantId: string,
     patch: Partial<{ name: string; cron: string; timezone: string; payload: unknown; isActive: boolean; nextRunAt: Date | null }>,
   ) {
-    return prisma.jobSchedule.updateMany({
-      where: { id, tenantId },
-      data: {
-        ...(patch.name !== undefined ? { name: patch.name } : {}),
-        ...(patch.cron !== undefined ? { cron: patch.cron } : {}),
-        ...(patch.timezone !== undefined ? { timezone: patch.timezone } : {}),
-        ...(patch.isActive !== undefined ? { isActive: patch.isActive } : {}),
-        ...(patch.nextRunAt !== undefined ? { nextRunAt: patch.nextRunAt } : {}),
-        ...(patch.payload !== undefined ? { payload: patch.payload == null ? null : JSON.stringify(patch.payload) } : {}),
-      },
-    });
+    const update: Record<string, unknown> = { updatedAt: new Date() };
+    if (patch.name !== undefined) update.name = patch.name;
+    if (patch.cron !== undefined) update.cron = patch.cron;
+    if (patch.timezone !== undefined) update.timezone = patch.timezone;
+    if (patch.isActive !== undefined) update.isActive = patch.isActive;
+    if (patch.nextRunAt !== undefined) update.nextRunAt = patch.nextRunAt;
+    if (patch.payload !== undefined) update.payload = patch.payload == null ? null : JSON.stringify(patch.payload);
+    const result = await db.update(jobSchedules).set(update as never)
+      .where(and(eq(jobSchedules.id, id), eq(jobSchedules.tenantId, tenantId)))
+      .returning({ id: jobSchedules.id });
+    return { count: result.length };
   }
 
   static async deleteSchedule(id: string, tenantId: string) {
-    return prisma.jobSchedule.deleteMany({
-      where: { id, tenantId },
-    });
+    const result = await db.delete(jobSchedules)
+      .where(and(eq(jobSchedules.id, id), eq(jobSchedules.tenantId, tenantId)))
+      .returning({ id: jobSchedules.id });
+    return { count: result.length };
   }
 
   static async listDueSchedules(now: Date) {
-    return prisma.jobSchedule.findMany({
-      where: {
-        isActive: true,
-        nextRunAt: { lte: now },
-      },
-      orderBy: { nextRunAt: 'asc' },
-    });
+    return db.select().from(jobSchedules)
+      .where(and(eq(jobSchedules.isActive, true), lte(jobSchedules.nextRunAt, now)))
+      .orderBy(asc(jobSchedules.nextRunAt));
   }
 
   static async touchScheduleRun(id: string, nextRunAt: Date) {
-    return prisma.jobSchedule.update({
-      where: { id },
-      data: {
-        lastRunAt: new Date(),
-        nextRunAt,
-      },
-    });
+    const [schedule] = await db.update(jobSchedules).set({
+      lastRunAt: new Date(),
+      nextRunAt,
+      updatedAt: new Date(),
+    }).where(eq(jobSchedules.id, id)).returning();
+    return schedule;
   }
 }
 `;
 }
 
-function dbSeedScript(): string {
-  return `#!/usr/bin/env node
-import prismaPkg from '@prisma/client';
-import { createHash } from 'node:crypto';
+function dbLoggingTs(): string {
+  return `import { db, SettingsService } from './index.js';
+import { logEntries, tenants } from './schema.js';
+import { eq, and, desc, gte, lte } from 'drizzle-orm';
+
+export type LogLevel = 'error' | 'warn' | 'info' | 'debug';
+
+export type LoggingSettings = {
+  level: LogLevel;
+  useLocalDb: boolean;
+  retentionDays: number;
+  advancedEnabled: boolean;
+};
+
+export type LogCreateInput = {
+  tenantId: string;
+  environmentId?: string | null;
+  service: string;
+  level: LogLevel;
+  message: string;
+  details?: unknown;
+};
+
+function serializeDetails(details: unknown): string | undefined {
+  if (details === undefined) return undefined;
+  try {
+    return JSON.stringify(details);
+  } catch {
+    return JSON.stringify({ note: 'unserializable-details' });
+  }
+}
+
+function parseDetails(details: string | null): unknown {
+  if (!details) return null;
+  try {
+    return JSON.parse(details);
+  } catch {
+    return details;
+  }
+}
+
+const DEFAULTS: LoggingSettings = {
+  level: 'info',
+  useLocalDb: true,
+  retentionDays: 30,
+  advancedEnabled: false,
+};
+
+const LEVEL_WEIGHT: Record<LogLevel, number> = {
+  error: 4,
+  warn: 3,
+  info: 2,
+  debug: 1,
+};
+
+function asLogLevel(value: unknown): LogLevel {
+  return value === 'error' || value === 'warn' || value === 'info' || value === 'debug' ? value : DEFAULTS.level;
+}
+
+function normalizeSettings(raw: Record<string, unknown>): LoggingSettings {
+  const retentionValue = Number(raw['retentionDays']);
+  return {
+    level: asLogLevel(raw['level']),
+    useLocalDb: raw['useLocalDb'] !== false,
+    retentionDays: Number.isFinite(retentionValue) && retentionValue > 0 ? Math.floor(retentionValue) : DEFAULTS.retentionDays,
+    advancedEnabled: raw['advancedEnabled'] === true,
+  };
+}
+
+export class LogService {
+  static async getSettings(tenantId: string): Promise<LoggingSettings> {
+    const raw = await SettingsService.getAll(tenantId, 'logging', { scope: 'tenant' });
+    return normalizeSettings(raw);
+  }
+
+  static async setSettings(tenantId: string, patch: Partial<LoggingSettings>): Promise<LoggingSettings> {
+    const next: LoggingSettings = {
+      ...(await LogService.getSettings(tenantId)),
+      ...(patch.level !== undefined ? { level: patch.level } : {}),
+      ...(patch.useLocalDb !== undefined ? { useLocalDb: patch.useLocalDb } : {}),
+      ...(patch.retentionDays !== undefined ? { retentionDays: patch.retentionDays } : {}),
+      ...(patch.advancedEnabled !== undefined ? { advancedEnabled: patch.advancedEnabled } : {}),
+    };
+
+    await SettingsService.set(tenantId, 'logging', 'level', next.level, { scope: 'tenant' });
+    await SettingsService.set(tenantId, 'logging', 'useLocalDb', next.useLocalDb, { scope: 'tenant' });
+    await SettingsService.set(tenantId, 'logging', 'retentionDays', next.retentionDays, { scope: 'tenant' });
+    await SettingsService.set(tenantId, 'logging', 'advancedEnabled', next.advancedEnabled, { scope: 'tenant' });
+
+    return next;
+  }
+
+  static shouldLog(activeLevel: LogLevel, incomingLevel: LogLevel): boolean {
+    return LEVEL_WEIGHT[incomingLevel] >= LEVEL_WEIGHT[activeLevel];
+  }
+
+  static async create(input: LogCreateInput) {
+    const details = serializeDetails(input.details);
+    const [row] = await db.insert(logEntries).values({
+      tenantId: input.tenantId,
+      environmentId: input.environmentId ?? null,
+      service: input.service,
+      level: input.level,
+      message: input.message,
+      details: details ?? null,
+    }).returning();
+    return row;
+  }
+
+  static async list(
+    tenantId: string,
+    options?: { level?: LogLevel | 'all'; service?: string; from?: Date; to?: Date; limit?: number },
+  ) {
+    const limit = Math.min(500, Math.max(1, options?.limit ?? 100));
+    const conditions = [eq(logEntries.tenantId, tenantId)] as ReturnType<typeof eq>[];
+    if (options?.level && options.level !== 'all') conditions.push(eq(logEntries.level, options.level) as never);
+    if (options?.service) conditions.push(eq(logEntries.service, options.service) as never);
+    if (options?.from) conditions.push(gte(logEntries.timestamp, options.from) as never);
+    if (options?.to) conditions.push(lte(logEntries.timestamp, options.to) as never);
+    const rows = await db.select().from(logEntries)
+      .where(and(...conditions))
+      .orderBy(desc(logEntries.timestamp))
+      .limit(limit);
+    return rows.map(row => ({ ...row, details: parseDetails(row.details) }));
+  }
+
+  static async purgeOlderThan(tenantId: string, retentionDays: number): Promise<number> {
+    const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
+    const deleted = await db.delete(logEntries)
+      .where(and(eq(logEntries.tenantId, tenantId), lte(logEntries.timestamp, cutoff)))
+      .returning({ id: logEntries.id });
+    return deleted.length;
+  }
+
+  static async purgeUsingTenantSettings(): Promise<number> {
+    const allTenants = await db.select({ id: tenants.id }).from(tenants);
+    let total = 0;
+    for (const tenant of allTenants) {
+      const s = await LogService.getSettings(tenant.id);
+      total += await LogService.purgeOlderThan(tenant.id, s.retentionDays);
+    }
+    return total;
+  }
+}
+`;
+}
+
+function dbSeedScript(options: InitScaffoldOptions): string {
+  const isSqlite = options.dbProvider === 'sqlite';
+  const clientSetup = isSqlite
+    ? `import Database from 'better-sqlite3';
+import { drizzle } from 'drizzle-orm/better-sqlite3';
+import * as schema from '../src/schema.js';
+
+const _url = process.env['DATABASE_URL'] ?? './dev.db';
+const _path = _url.startsWith('file:') ? _url.slice(5) : _url;
+const sqlite = new Database(_path);
+const db = drizzle(sqlite, { schema });`
+    : `import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import * as schema from '../src/schema.js';
+
+const client = postgres(process.env['DATABASE_URL']!);
+const db = drizzle(client, { schema });`;
+  return `import { createHash } from 'node:crypto';
+import { eq, and } from 'drizzle-orm';
 import { runModuleSeeders } from './seed-registry.mjs';
+${clientSetup}
+import { tenants, users, memberships, permissions, roles, rolePermissions, userRoles, settings } from '../src/schema.js';
 
-const { PrismaClient } = prismaPkg;
-
-const prisma = new PrismaClient();
-
-function hash(password) {
+function hash(password: string): string {
   return createHash('sha256').update(password).digest('hex');
 }
 
+async function upsertSetting(tenantId: string, module: string, key: string, value: string, dataType: string) {
+  const existing = await db.query.settings.findFirst({
+    where: and(
+      eq(settings.tenantId, tenantId),
+      eq(settings.module, module),
+      eq(settings.key, key),
+    ),
+  });
+  if (existing) {
+    await db.update(settings).set({ value, dataType, updatedAt: new Date() }).where(eq(settings.id, existing.id));
+  } else {
+    await db.insert(settings).values({ tenantId, environmentId: null, scope: 'tenant', module, key, value, dataType });
+  }
+}
+
 async function main() {
-  const tenant = await prisma.tenant.upsert({
-    where: { slug: 'local-demo' },
-    update: {},
-    create: { slug: 'local-demo', name: 'Local Demo Tenant' },
-  });
+  const now = new Date();
 
-  const user = await prisma.user.upsert({
-    where: { email: 'admin@local-demo.com' },
-    update: {},
-    create: { email: 'admin@local-demo.com', name: 'Local Admin', passwordHash: hash('Password1!') },
-  });
+  const [tenant] = await db.insert(tenants)
+    .values({ slug: 'local-demo', name: 'Local Demo Tenant' })
+    .onConflictDoUpdate({ target: [tenants.slug], set: { name: 'Local Demo Tenant' } })
+    .returning();
 
-  await prisma.membership.upsert({
-    where: { tenantId_userId: { tenantId: tenant.id, userId: user.id } },
-    update: {},
-    create: { tenantId: tenant.id, userId: user.id, role: 'admin' },
-  });
+  const [user] = await db.insert(users)
+    .values({ email: 'admin@local-demo.com', name: 'Local Admin', passwordHash: hash('Password1!') })
+    .onConflictDoUpdate({ target: [users.email], set: { name: 'Local Admin' } })
+    .returning();
 
-  const permissions = [
+  await db.insert(memberships)
+    .values({ tenantId: tenant.id, userId: user.id, role: 'admin' })
+    .onConflictDoUpdate({ target: [memberships.tenantId, memberships.userId], set: { role: 'admin' } });
+
+  const permDefs: [string, string, string][] = [
     ['users', 'read', 'View users'],
     ['users', 'manage', 'Create/update users and assignments'],
     ['roles', 'read', 'View roles'],
@@ -4905,69 +5462,31 @@ async function main() {
     ['jobs', 'trigger', 'Trigger background jobs'],
   ];
 
-  for (const [module, action, description] of permissions) {
-    await prisma.permission.upsert({
-      where: { module_action: { module, action } },
-      update: { description },
-      create: { module, action, description },
-    });
+  for (const [module, action, description] of permDefs) {
+    await db.insert(permissions)
+      .values({ module, action, description, updatedAt: now })
+      .onConflictDoUpdate({ target: [permissions.module, permissions.action], set: { description, updatedAt: now } });
   }
 
-  const adminRole = await prisma.role.upsert({
-    where: { tenantId_name: { tenantId: tenant.id, name: 'Admin' } },
-    update: { description: 'Tenant administrator role' },
-    create: { tenantId: tenant.id, name: 'Admin', description: 'Tenant administrator role' },
-  });
+  const [adminRole] = await db.insert(roles)
+    .values({ tenantId: tenant.id, name: 'Admin', description: 'Tenant administrator role', updatedAt: now })
+    .onConflictDoUpdate({ target: [roles.tenantId, roles.name], set: { description: 'Tenant administrator role', updatedAt: now } })
+    .returning();
 
-  const allPerms = await prisma.permission.findMany();
+  const allPerms = await db.select().from(permissions);
   for (const perm of allPerms) {
-    await prisma.rolePermission.upsert({
-      where: { roleId_permissionId: { roleId: adminRole.id, permissionId: perm.id } },
-      update: {},
-      create: { roleId: adminRole.id, permissionId: perm.id },
-    });
+    await db.insert(rolePermissions)
+      .values({ roleId: adminRole.id, permissionId: perm.id })
+      .onConflictDoNothing();
   }
 
-  await prisma.userRole.upsert({
-    where: { userId_roleId: { userId: user.id, roleId: adminRole.id } },
-    update: {},
-    create: { userId: user.id, roleId: adminRole.id },
-  });
+  await db.insert(userRoles)
+    .values({ userId: user.id, roleId: adminRole.id })
+    .onConflictDoNothing();
 
-  const existingNotificationSetting = await (prisma.setting.findFirst as any)({
-    where: {
-      tenantId: tenant.id,
-      environmentId: null,
-      scope: 'tenant',
-      module: 'notifications',
-      key: 'emailEnabled',
-    },
-    select: { id: true },
-  });
+  await upsertSetting(tenant.id, 'notifications', 'emailEnabled', 'true', 'boolean');
 
-  if (existingNotificationSetting) {
-    await (prisma.setting.update as any)({
-      where: { id: existingNotificationSetting.id },
-      data: { value: 'true', dataType: 'boolean' },
-    });
-  } else {
-    await (prisma.setting.create as any)({
-      data: {
-        tenantId: tenant.id,
-        environmentId: null,
-        scope: 'tenant',
-        module: 'notifications',
-        key: 'emailEnabled',
-        value: 'true',
-        dataType: 'boolean',
-      },
-    });
-  }
-
-  await runModuleSeeders({
-    prisma,
-    tenantIds: [tenant.id],
-  });
+  await runModuleSeeders({ db, tenantIds: [tenant.id] });
 
   console.log('Seed complete');
   console.log('Email: admin@local-demo.com');
@@ -4975,15 +5494,9 @@ async function main() {
   console.log('TenantId: ' + tenant.id);
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
+main().catch((e) => { console.error(e); process.exit(1); });
 `;
 }
-
 function dbSeedRegistryScript(): string {
   return `const moduleSeeders = [
 ];
@@ -4994,6 +5507,739 @@ export async function runModuleSeeders(context) {
   }
 }
 `;
+}
+
+function dbRbacTs(): string {
+  return `import { db } from './index.js';
+import { users, memberships, roles, userRoles, rolePermissions, permissions } from './schema.js';
+import { eq, and, inArray } from 'drizzle-orm';
+
+export class RbacService {
+  static async listUsers(tenantId: string) {
+    const memberRows = await db.select({ userId: memberships.userId }).from(memberships).where(eq(memberships.tenantId, tenantId));
+    const userIds = memberRows.map(r => r.userId);
+    if (userIds.length === 0) return [];
+
+    const [allUsers, tenantMemberships, tenantRoles] = await Promise.all([
+      db.select().from(users).where(inArray(users.id, userIds)),
+      db.select().from(memberships).where(and(eq(memberships.tenantId, tenantId), inArray(memberships.userId, userIds))),
+      db.select({ id: roles.id }).from(roles).where(eq(roles.tenantId, tenantId)),
+    ]);
+
+    const tenantRoleIds = tenantRoles.map(r => r.id);
+    const urRows = tenantRoleIds.length > 0
+      ? await db.select().from(userRoles)
+          .leftJoin(roles, eq(userRoles.roleId, roles.id))
+          .where(and(inArray(userRoles.userId, userIds), inArray(userRoles.roleId, tenantRoleIds)))
+      : [];
+
+    return allUsers.map(u => ({
+      ...u,
+      memberships: tenantMemberships.filter(m => m.userId === u.id),
+      userRoles: urRows.filter(r => r.user_role.userId === u.id).map(r => ({ ...r.user_role, role: r.role })),
+    }));
+  }
+
+  static async getUserWithDetails(userId: string, tenantId: string) {
+    const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
+    if (!user) return null;
+    const tenantMemberships = await db.select().from(memberships)
+      .where(and(eq(memberships.tenantId, tenantId), eq(memberships.userId, userId)));
+    const tenantRoles = await db.select({ id: roles.id }).from(roles).where(eq(roles.tenantId, tenantId));
+    const tenantRoleIds = tenantRoles.map(r => r.id);
+    const urRows = tenantRoleIds.length > 0
+      ? await db.select().from(userRoles)
+          .leftJoin(roles, eq(userRoles.roleId, roles.id))
+          .where(and(eq(userRoles.userId, userId), inArray(userRoles.roleId, tenantRoleIds)))
+      : [];
+    return {
+      ...user,
+      memberships: tenantMemberships,
+      userRoles: urRows.map(r => ({ ...r.user_role, role: r.role })),
+    };
+  }
+
+  static async createUser(tenantId: string, email: string, name: string | null) {
+    const [user] = await db.insert(users).values({ email, name }).returning();
+    await db.insert(memberships).values({ tenantId, userId: user.id, role: 'member' }).onConflictDoNothing();
+    return RbacService.getUserWithDetails(user.id, tenantId);
+  }
+
+  static async updateUser(userId: string, tenantId: string, update: { name?: string; email?: string }) {
+    const membership = await db.query.memberships.findFirst({ where: and(eq(memberships.tenantId, tenantId), eq(memberships.userId, userId)) });
+    if (!membership) return null;
+    if (Object.keys(update).length > 0) {
+      await db.update(users).set(update).where(eq(users.id, userId));
+    }
+    return RbacService.getUserWithDetails(userId, tenantId);
+  }
+
+  static async deleteUser(userId: string, tenantId: string) {
+    const membership = await db.query.memberships.findFirst({ where: and(eq(memberships.tenantId, tenantId), eq(memberships.userId, userId)) });
+    if (!membership) return false;
+    const tenantRoles = await db.select({ id: roles.id }).from(roles).where(eq(roles.tenantId, tenantId));
+    const tenantRoleIds = tenantRoles.map(r => r.id);
+    if (tenantRoleIds.length > 0) {
+      await db.delete(userRoles).where(and(eq(userRoles.userId, userId), inArray(userRoles.roleId, tenantRoleIds)));
+    }
+    await db.delete(memberships).where(and(eq(memberships.tenantId, tenantId), eq(memberships.userId, userId)));
+    const remaining = await db.select({ id: memberships.id }).from(memberships).where(eq(memberships.userId, userId));
+    if (remaining.length === 0) await db.delete(users).where(eq(users.id, userId));
+    return true;
+  }
+
+  static async assignRole(userId: string, roleId: string, tenantId: string) {
+    const role = await db.query.roles.findFirst({ where: and(eq(roles.id, roleId), eq(roles.tenantId, tenantId)) });
+    if (!role) return null;
+    const [assignment] = await db.insert(userRoles).values({ userId, roleId }).returning();
+    return { ...assignment, role };
+  }
+
+  static async removeRoleAssignment(id: string, tenantId: string) {
+    const assignment = await db.query.userRoles.findFirst({ where: eq(userRoles.id, id) });
+    if (!assignment) return null;
+    const role = await db.query.roles.findFirst({ where: eq(roles.id, assignment.roleId) });
+    if (!role || role.tenantId !== tenantId) return null;
+    const [removed] = await db.delete(userRoles).where(eq(userRoles.id, id)).returning();
+    return removed;
+  }
+
+  static async listRoles(tenantId: string) {
+    const allRoles = await db.select().from(roles).where(eq(roles.tenantId, tenantId)).orderBy(roles.createdAt);
+    const roleIds = allRoles.map(r => r.id);
+    const permRows = roleIds.length > 0
+      ? await db.select().from(rolePermissions)
+          .leftJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
+          .where(inArray(rolePermissions.roleId, roleIds))
+      : [];
+    return allRoles.map(role => ({
+      ...role,
+      permissions: permRows.filter(p => p.role_permission.roleId === role.id).map(p => ({ ...p.role_permission, permission: p.permission })),
+    }));
+  }
+
+  static async createRole(tenantId: string, name: string, description: string | null) {
+    const [role] = await db.insert(roles).values({ tenantId, name, description, updatedAt: new Date() }).returning();
+    return { ...role, permissions: [] };
+  }
+
+  static async updateRole(roleId: string, update: { name?: string; description?: string }) {
+    const [updated] = await db.update(roles).set({ ...update, updatedAt: new Date() }).where(eq(roles.id, roleId)).returning();
+    return updated ? { ...updated, permissions: [] } : null;
+  }
+
+  static async deleteRole(roleId: string, tenantId: string) {
+    const role = await db.query.roles.findFirst({ where: and(eq(roles.id, roleId), eq(roles.tenantId, tenantId)) });
+    if (!role) return false;
+    await db.delete(roles).where(eq(roles.id, roleId));
+    return true;
+  }
+
+  static async assignPermission(roleId: string, permissionId: string, tenantId: string) {
+    const role = await db.query.roles.findFirst({ where: and(eq(roles.id, roleId), eq(roles.tenantId, tenantId)) });
+    if (!role) return null;
+    const [assignment] = await db.insert(rolePermissions).values({ roleId, permissionId }).returning();
+    const perm = await db.query.permissions.findFirst({ where: eq(permissions.id, permissionId) });
+    return { ...assignment, permission: perm };
+  }
+
+  static async removePermissionAssignment(id: string, tenantId: string) {
+    const assignment = await db.query.rolePermissions.findFirst({ where: eq(rolePermissions.id, id) });
+    if (!assignment) return null;
+    const role = await db.query.roles.findFirst({ where: eq(roles.id, assignment.roleId) });
+    if (!role || role.tenantId !== tenantId) return null;
+    const [removed] = await db.delete(rolePermissions).where(eq(rolePermissions.id, id)).returning();
+    return removed;
+  }
+
+  static async listPermissions() {
+    return db.select().from(permissions).orderBy(permissions.module, permissions.action);
+  }
+
+  static async createPermission(module: string, action: string, description: string | null) {
+    const [perm] = await db.insert(permissions).values({ module, action, description, updatedAt: new Date() }).returning();
+    return perm;
+  }
+
+  static async updatePermission(permissionId: string, update: { module?: string; action?: string; description?: string }) {
+    const [updated] = await db.update(permissions).set({ ...update, updatedAt: new Date() }).where(eq(permissions.id, permissionId)).returning();
+    return updated;
+  }
+
+  static async deletePermission(permissionId: string) {
+    await db.delete(permissions).where(eq(permissions.id, permissionId));
+  }
+
+  static async hasPermission(userId: string, tenantId: string, module: string, action: string): Promise<boolean> {
+    const results = await db.select({ id: userRoles.id })
+      .from(userRoles)
+      .innerJoin(roles, and(eq(userRoles.roleId, roles.id), eq(roles.tenantId, tenantId)))
+      .innerJoin(rolePermissions, eq(rolePermissions.roleId, roles.id))
+      .innerJoin(permissions, and(
+        eq(rolePermissions.permissionId, permissions.id),
+        eq(permissions.module, module),
+        eq(permissions.action, action),
+      ))
+      .where(eq(userRoles.userId, userId))
+      .limit(1);
+    return results.length > 0;
+  }
+}
+`;
+}
+
+function drizzleConfigTs(options: InitScaffoldOptions): string {
+  const dialect = options.dbProvider === 'sqlite' ? 'sqlite' : options.dbProvider === 'mysql' ? 'mysql' : 'postgresql';
+  return `import { defineConfig } from 'drizzle-kit';
+
+export default defineConfig({
+  schema: './src/schema.ts',
+  out: './drizzle',
+  dialect: '${dialect}',
+  dbCredentials: {
+    url: process.env['DATABASE_URL']!,
+  },
+});
+`.replace('${dialect}', dialect);
+}
+
+function dbSchemaTs(options: InitScaffoldOptions): string {
+  if (options.dbProvider === 'sqlite') {
+    const authServerTable = options.authServer ? `
+export const authServerSettings = sqliteTable('auth_server_setting', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().unique().references(() => tenants.id, { onDelete: 'cascade' }),
+  enabled: integer('enabled', { mode: 'boolean' }).notNull().default(false),
+  provider: text('provider'),
+  issuerUrl: text('issuer_url'),
+  jwksUrl: text('jwks_url'),
+  clientId: text('client_id'),
+  clientSecret: text('client_secret'),
+  audience: text('audience'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+});
+` : '';
+    return `import { sqliteTable, text, integer, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
+
+function genId() { return crypto.randomUUID(); }
+function now() { return new Date(); }
+
+export const tenants = sqliteTable('tenant', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  slug: text('slug').notNull().unique(),
+  name: text('name').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+});
+
+export const environments = sqliteTable('environment', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  isDefault: integer('is_default', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('env_tenant_name_idx').on(t.tenantId, t.name),
+]);
+
+export const users = sqliteTable('user', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  email: text('email').notNull().unique(),
+  name: text('name'),
+  passwordHash: text('password_hash'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+});
+
+export const memberships = sqliteTable('membership', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  role: text('role').notNull().default('member'),
+  environmentId: text('environment_id').references(() => environments.id, { onDelete: 'set null' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('membership_tenant_user_idx').on(t.tenantId, t.userId),
+]);
+
+export const auditLogs = sqliteTable('audit_log', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  action: text('action').notNull(),
+  entityType: text('entity_type').notNull(),
+  entityId: text('entity_id'),
+  traceId: text('trace_id'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+});
+
+export const settings = sqliteTable('setting', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }),
+  environmentId: text('environment_id').references(() => environments.id, { onDelete: 'set null' }),
+  scope: text('scope').notNull().default('tenant'),
+  module: text('module').notNull(),
+  key: text('key').notNull(),
+  value: text('value').notNull(),
+  dataType: text('data_type').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('setting_tenant_env_scope_module_key_idx').on(t.tenantId, t.environmentId, t.scope, t.module, t.key),
+  index('setting_tenant_scope_module_idx').on(t.tenantId, t.scope, t.module),
+]);
+
+export const permissions = sqliteTable('permission', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  module: text('module').notNull(),
+  action: text('action').notNull(),
+  description: text('description'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('permission_module_action_idx').on(t.module, t.action),
+]);
+
+export const roles = sqliteTable('role', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  description: text('description'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('role_tenant_name_idx').on(t.tenantId, t.name),
+]);
+
+export const userRoles = sqliteTable('user_role', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  roleId: text('role_id').notNull().references(() => roles.id, { onDelete: 'cascade' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('user_role_user_role_idx').on(t.userId, t.roleId),
+]);
+
+export const rolePermissions = sqliteTable('role_permission', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  roleId: text('role_id').notNull().references(() => roles.id, { onDelete: 'cascade' }),
+  permissionId: text('permission_id').notNull().references(() => permissions.id, { onDelete: 'cascade' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('role_permission_role_perm_idx').on(t.roleId, t.permissionId),
+]);
+
+export const billingCustomers = sqliteTable('billing_customer', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  provider: text('provider').notNull().default('stripe'),
+  externalCustomerId: text('external_customer_id').notNull(),
+  email: text('email'),
+  name: text('name'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('billing_customer_tenant_provider_ext_idx').on(t.tenantId, t.provider, t.externalCustomerId),
+  index('billing_customer_tenant_provider_idx').on(t.tenantId, t.provider),
+]);
+
+export const billingSubscriptions = sqliteTable('billing_subscription', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  customerId: text('customer_id').notNull().references(() => billingCustomers.id, { onDelete: 'cascade' }),
+  provider: text('provider').notNull().default('stripe'),
+  externalSubscriptionId: text('external_subscription_id').notNull(),
+  planCode: text('plan_code').notNull(),
+  status: text('status').notNull(),
+  currency: text('currency').notNull().default('USD'),
+  cancelAtPeriodEnd: integer('cancel_at_period_end', { mode: 'boolean' }).notNull().default(false),
+  currentPeriodStart: integer('current_period_start', { mode: 'timestamp' }),
+  currentPeriodEnd: integer('current_period_end', { mode: 'timestamp' }),
+  cancelledAt: integer('cancelled_at', { mode: 'timestamp' }),
+  metadata: text('metadata'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('billing_sub_tenant_provider_ext_idx').on(t.tenantId, t.provider, t.externalSubscriptionId),
+  index('billing_sub_tenant_status_idx').on(t.tenantId, t.status),
+]);
+
+export const billingEvents = sqliteTable('billing_event', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  provider: text('provider').notNull().default('stripe'),
+  eventType: text('event_type').notNull(),
+  externalEventId: text('external_event_id'),
+  payload: text('payload').notNull(),
+  status: text('status').notNull(),
+  error: text('error'),
+  receivedAt: integer('received_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+  processedAt: integer('processed_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+}, (t) => [
+  index('billing_event_tenant_received_idx').on(t.tenantId, t.receivedAt),
+  index('billing_event_external_idx').on(t.externalEventId),
+]);
+
+export const notificationTemplates = sqliteTable('notification_template', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  key: text('key').notNull(),
+  channel: text('channel').notNull(),
+  provider: text('provider'),
+  subject: text('subject'),
+  body: text('body').notNull(),
+  variablesSchema: text('variables_schema'),
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('notif_template_tenant_key_idx').on(t.tenantId, t.key),
+  index('notif_template_tenant_channel_active_idx').on(t.tenantId, t.channel, t.isActive),
+]);
+
+export const notificationDeliveries = sqliteTable('notification_delivery', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  templateId: text('template_id').references(() => notificationTemplates.id, { onDelete: 'set null' }),
+  channel: text('channel').notNull(),
+  provider: text('provider'),
+  recipient: text('recipient').notNull(),
+  subject: text('subject'),
+  body: text('body').notNull(),
+  payload: text('payload'),
+  status: text('status').notNull(),
+  externalMessageId: text('external_message_id'),
+  error: text('error'),
+  sentAt: integer('sent_at', { mode: 'timestamp' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+}, (t) => [
+  index('notif_delivery_tenant_created_idx').on(t.tenantId, t.createdAt),
+  index('notif_delivery_tenant_status_idx').on(t.tenantId, t.status),
+]);
+
+export const logEntries = sqliteTable('log_entry', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  environmentId: text('environment_id').references(() => environments.id, { onDelete: 'set null' }),
+  service: text('service').notNull(),
+  level: text('level').notNull(),
+  message: text('message').notNull(),
+  details: text('details'),
+  timestamp: integer('timestamp', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+}, (t) => [
+  index('log_entry_tenant_ts_idx').on(t.tenantId, t.timestamp),
+  index('log_entry_svc_level_ts_idx').on(t.service, t.level, t.timestamp),
+]);
+
+export const jobSchedules = sqliteTable('job_schedule', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  jobType: text('job_type').notNull(),
+  cron: text('cron').notNull(),
+  timezone: text('timezone').notNull().default('UTC'),
+  payload: text('payload'),
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  lastRunAt: integer('last_run_at', { mode: 'timestamp' }),
+  nextRunAt: integer('next_run_at', { mode: 'timestamp' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('job_schedule_tenant_name_idx').on(t.tenantId, t.name),
+  index('job_schedule_tenant_active_next_idx').on(t.tenantId, t.isActive, t.nextRunAt),
+]);
+
+export const backgroundJobs = sqliteTable('background_job', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }),
+  scheduleId: text('schedule_id').references(() => jobSchedules.id, { onDelete: 'set null' }),
+  jobType: text('job_type').notNull(),
+  status: text('status').notNull(),
+  priority: integer('priority').notNull().default(0),
+  payload: text('payload'),
+  result: text('result'),
+  error: text('error'),
+  attempts: integer('attempts').notNull().default(0),
+  maxAttempts: integer('max_attempts').notNull().default(3),
+  nextRetry: integer('next_retry', { mode: 'timestamp' }),
+  scheduledFor: integer('scheduled_for', { mode: 'timestamp' }),
+  completedAt: integer('completed_at', { mode: 'timestamp' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(now).notNull(),
+  createdBy: text('created_by').references(() => users.id, { onDelete: 'set null' }),
+}, (t) => [
+  index('bg_job_tenant_status_scheduled_idx').on(t.tenantId, t.status, t.scheduledFor),
+  index('bg_job_schedule_idx').on(t.scheduleId),
+]);
+${authServerTable}`;
+  }
+
+  // PostgreSQL schema
+  const authServerTable = options.authServer ? `
+export const authServerSettings = pgTable('auth_server_setting', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().unique().references(() => tenants.id, { onDelete: 'cascade' }),
+  enabled: boolean('enabled').notNull().default(false),
+  provider: text('provider'),
+  issuerUrl: text('issuer_url'),
+  jwksUrl: text('jwks_url'),
+  clientId: text('client_id'),
+  clientSecret: text('client_secret'),
+  audience: text('audience'),
+  createdAt: timestamp('created_at').$defaultFn(now).notNull(),
+  updatedAt: timestamp('updated_at').$defaultFn(now).notNull(),
+});
+` : '';
+  return `import { pgTable, text, boolean, timestamp, integer, index, uniqueIndex } from 'drizzle-orm/pg-core';
+
+function genId() { return crypto.randomUUID(); }
+function now() { return new Date(); }
+
+export const tenants = pgTable('tenant', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  slug: text('slug').notNull().unique(),
+  name: text('name').notNull(),
+  createdAt: timestamp('created_at').$defaultFn(now).notNull(),
+});
+
+export const environments = pgTable('environment', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  isDefault: boolean('is_default').notNull().default(false),
+  createdAt: timestamp('created_at').$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('env_tenant_name_idx').on(t.tenantId, t.name),
+]);
+
+export const users = pgTable('user', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  email: text('email').notNull().unique(),
+  name: text('name'),
+  passwordHash: text('password_hash'),
+  createdAt: timestamp('created_at').$defaultFn(now).notNull(),
+});
+
+export const memberships = pgTable('membership', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  role: text('role').notNull().default('member'),
+  environmentId: text('environment_id').references(() => environments.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at').$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('membership_tenant_user_idx').on(t.tenantId, t.userId),
+]);
+
+export const auditLogs = pgTable('audit_log', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  action: text('action').notNull(),
+  entityType: text('entity_type').notNull(),
+  entityId: text('entity_id'),
+  traceId: text('trace_id'),
+  createdAt: timestamp('created_at').$defaultFn(now).notNull(),
+});
+
+export const settings = pgTable('setting', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }),
+  environmentId: text('environment_id').references(() => environments.id, { onDelete: 'set null' }),
+  scope: text('scope').notNull().default('tenant'),
+  module: text('module').notNull(),
+  key: text('key').notNull(),
+  value: text('value').notNull(),
+  dataType: text('data_type').notNull(),
+  createdAt: timestamp('created_at').$defaultFn(now).notNull(),
+  updatedAt: timestamp('updated_at').$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('setting_tenant_env_scope_module_key_idx').on(t.tenantId, t.environmentId, t.scope, t.module, t.key),
+  index('setting_tenant_scope_module_idx').on(t.tenantId, t.scope, t.module),
+]);
+
+export const permissions = pgTable('permission', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  module: text('module').notNull(),
+  action: text('action').notNull(),
+  description: text('description'),
+  createdAt: timestamp('created_at').$defaultFn(now).notNull(),
+  updatedAt: timestamp('updated_at').$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('permission_module_action_idx').on(t.module, t.action),
+]);
+
+export const roles = pgTable('role', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  description: text('description'),
+  createdAt: timestamp('created_at').$defaultFn(now).notNull(),
+  updatedAt: timestamp('updated_at').$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('role_tenant_name_idx').on(t.tenantId, t.name),
+]);
+
+export const userRoles = pgTable('user_role', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  roleId: text('role_id').notNull().references(() => roles.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('user_role_user_role_idx').on(t.userId, t.roleId),
+]);
+
+export const rolePermissions = pgTable('role_permission', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  roleId: text('role_id').notNull().references(() => roles.id, { onDelete: 'cascade' }),
+  permissionId: text('permission_id').notNull().references(() => permissions.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('role_permission_role_perm_idx').on(t.roleId, t.permissionId),
+]);
+
+export const billingCustomers = pgTable('billing_customer', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  provider: text('provider').notNull().default('stripe'),
+  externalCustomerId: text('external_customer_id').notNull(),
+  email: text('email'),
+  name: text('name'),
+  createdAt: timestamp('created_at').$defaultFn(now).notNull(),
+  updatedAt: timestamp('updated_at').$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('billing_customer_tenant_provider_ext_idx').on(t.tenantId, t.provider, t.externalCustomerId),
+  index('billing_customer_tenant_provider_idx').on(t.tenantId, t.provider),
+]);
+
+export const billingSubscriptions = pgTable('billing_subscription', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  customerId: text('customer_id').notNull().references(() => billingCustomers.id, { onDelete: 'cascade' }),
+  provider: text('provider').notNull().default('stripe'),
+  externalSubscriptionId: text('external_subscription_id').notNull(),
+  planCode: text('plan_code').notNull(),
+  status: text('status').notNull(),
+  currency: text('currency').notNull().default('USD'),
+  cancelAtPeriodEnd: boolean('cancel_at_period_end').notNull().default(false),
+  currentPeriodStart: timestamp('current_period_start'),
+  currentPeriodEnd: timestamp('current_period_end'),
+  cancelledAt: timestamp('cancelled_at'),
+  metadata: text('metadata'),
+  createdAt: timestamp('created_at').$defaultFn(now).notNull(),
+  updatedAt: timestamp('updated_at').$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('billing_sub_tenant_provider_ext_idx').on(t.tenantId, t.provider, t.externalSubscriptionId),
+  index('billing_sub_tenant_status_idx').on(t.tenantId, t.status),
+]);
+
+export const billingEvents = pgTable('billing_event', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  provider: text('provider').notNull().default('stripe'),
+  eventType: text('event_type').notNull(),
+  externalEventId: text('external_event_id'),
+  payload: text('payload').notNull(),
+  status: text('status').notNull(),
+  error: text('error'),
+  receivedAt: timestamp('received_at').$defaultFn(now).notNull(),
+  processedAt: timestamp('processed_at').$defaultFn(now).notNull(),
+}, (t) => [
+  index('billing_event_tenant_received_idx').on(t.tenantId, t.receivedAt),
+  index('billing_event_external_idx').on(t.externalEventId),
+]);
+
+export const notificationTemplates = pgTable('notification_template', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  key: text('key').notNull(),
+  channel: text('channel').notNull(),
+  provider: text('provider'),
+  subject: text('subject'),
+  body: text('body').notNull(),
+  variablesSchema: text('variables_schema'),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at').$defaultFn(now).notNull(),
+  updatedAt: timestamp('updated_at').$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('notif_template_tenant_key_idx').on(t.tenantId, t.key),
+  index('notif_template_tenant_channel_active_idx').on(t.tenantId, t.channel, t.isActive),
+]);
+
+export const notificationDeliveries = pgTable('notification_delivery', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  templateId: text('template_id').references(() => notificationTemplates.id, { onDelete: 'set null' }),
+  channel: text('channel').notNull(),
+  provider: text('provider'),
+  recipient: text('recipient').notNull(),
+  subject: text('subject'),
+  body: text('body').notNull(),
+  payload: text('payload'),
+  status: text('status').notNull(),
+  externalMessageId: text('external_message_id'),
+  error: text('error'),
+  sentAt: timestamp('sent_at'),
+  createdAt: timestamp('created_at').$defaultFn(now).notNull(),
+  updatedAt: timestamp('updated_at').$defaultFn(now).notNull(),
+}, (t) => [
+  index('notif_delivery_tenant_created_idx').on(t.tenantId, t.createdAt),
+  index('notif_delivery_tenant_status_idx').on(t.tenantId, t.status),
+]);
+
+export const logEntries = pgTable('log_entry', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  environmentId: text('environment_id').references(() => environments.id, { onDelete: 'set null' }),
+  service: text('service').notNull(),
+  level: text('level').notNull(),
+  message: text('message').notNull(),
+  details: text('details'),
+  timestamp: timestamp('timestamp').$defaultFn(now).notNull(),
+}, (t) => [
+  index('log_entry_tenant_ts_idx').on(t.tenantId, t.timestamp),
+  index('log_entry_svc_level_ts_idx').on(t.service, t.level, t.timestamp),
+]);
+
+export const jobSchedules = pgTable('job_schedule', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  jobType: text('job_type').notNull(),
+  cron: text('cron').notNull(),
+  timezone: text('timezone').notNull().default('UTC'),
+  payload: text('payload'),
+  isActive: boolean('is_active').notNull().default(true),
+  lastRunAt: timestamp('last_run_at'),
+  nextRunAt: timestamp('next_run_at'),
+  createdAt: timestamp('created_at').$defaultFn(now).notNull(),
+  updatedAt: timestamp('updated_at').$defaultFn(now).notNull(),
+}, (t) => [
+  uniqueIndex('job_schedule_tenant_name_idx').on(t.tenantId, t.name),
+  index('job_schedule_tenant_active_next_idx').on(t.tenantId, t.isActive, t.nextRunAt),
+]);
+
+export const backgroundJobs = pgTable('background_job', {
+  id: text('id').primaryKey().$defaultFn(genId),
+  tenantId: text('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }),
+  scheduleId: text('schedule_id').references(() => jobSchedules.id, { onDelete: 'set null' }),
+  jobType: text('job_type').notNull(),
+  status: text('status').notNull(),
+  priority: integer('priority').notNull().default(0),
+  payload: text('payload'),
+  result: text('result'),
+  error: text('error'),
+  attempts: integer('attempts').notNull().default(0),
+  maxAttempts: integer('max_attempts').notNull().default(3),
+  nextRetry: timestamp('next_retry'),
+  scheduledFor: timestamp('scheduled_for'),
+  completedAt: timestamp('completed_at'),
+  createdAt: timestamp('created_at').$defaultFn(now).notNull(),
+  updatedAt: timestamp('updated_at').$defaultFn(now).notNull(),
+  createdBy: text('created_by').references(() => users.id, { onDelete: 'set null' }),
+}, (t) => [
+  index('bg_job_tenant_status_scheduled_idx').on(t.tenantId, t.status, t.scheduledFor),
+  index('bg_job_schedule_idx').on(t.scheduleId),
+]);
+${authServerTable}`;
 }
 
 function prismaSchema(options: InitScaffoldOptions): string {
@@ -5048,6 +6294,7 @@ model Tenant {
   auditLogs    AuditLog[]
   notificationTemplates  NotificationTemplate[]
   notificationDeliveries NotificationDelivery[]
+  logs LogEntry[]
   billingCustomers     BillingCustomer[]
   billingSubscriptions BillingSubscription[]
   billingEvents        BillingEvent[]
@@ -5278,6 +6525,22 @@ model NotificationDelivery {
 
   @@index([tenantId, createdAt])
   @@index([tenantId, status])
+}
+
+model LogEntry {
+  id            String   @id @default(cuid())
+  tenantId      String
+  environmentId String?
+  service       String
+  level         String
+  message       String
+  details       String?
+  timestamp     DateTime @default(now())
+
+  tenant        Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, timestamp])
+  @@index([service, level, timestamp])
 }
 
 model BackgroundJob {
@@ -5521,6 +6784,20 @@ CREATE TABLE IF NOT EXISTS notification_delivery (
   updated_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS log_entry (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL,
+  environment_id TEXT,
+  service TEXT NOT NULL,
+  level TEXT NOT NULL,
+  message TEXT NOT NULL,
+  details TEXT,
+  timestamp TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_log_entry_tenant_timestamp ON log_entry (tenant_id, timestamp);
+CREATE INDEX IF NOT EXISTS idx_log_entry_service_level_timestamp ON log_entry (service, level, timestamp);
+
 CREATE TABLE IF NOT EXISTS background_job (
   id TEXT PRIMARY KEY,
   tenant_id TEXT,
@@ -5652,12 +6929,24 @@ export function getPortalMenuSections(): PortalMenuSection[] {
       label: 'Operations',
       children: [
         { id: 'dashboard', label: 'Dashboard', route: '/dashboard' },
+        { id: 'customers', label: 'Customers', route: '/customers', moduleId: 'customers' },
+        { id: 'technicians', label: 'Technicians', route: '/technicians', moduleId: 'technicians' },
+        { id: 'appointments', label: 'Appointments', route: '/appointments', moduleId: 'appointments' },
+        { id: 'dispatch', label: 'Dispatch Board', route: '/dispatch', moduleId: 'dispatch' },
+        { id: 'inventory', label: 'Inventory', route: '/inventory', moduleId: 'inventory' },
+        { id: 'jobs', label: 'Work Orders', route: '/jobs', permissions: ['jobs:read'], moduleId: 'work-orders' },
+        { id: 'invoices', label: 'Invoices', route: '/invoices', moduleId: 'invoices' },
+        { id: 'billing', label: 'Subscriptions', route: '/billing', moduleId: 'subscriptions' },
+        { id: 'reports', label: 'Reports', route: '/reports', moduleId: 'reports' },
+        { id: 'workflows', label: 'Workflows', route: '/workflows', moduleId: 'workflows' },
+        { id: 'webhooks', label: 'Webhooks', route: '/webhooks', moduleId: 'webhooks' },
         { id: 'users', label: 'Users', route: '/users', permissions: ['users:read'] },
         { id: 'roles', label: 'Roles', route: '/roles', permissions: ['roles:read'] },
         { id: 'permissions', label: 'Permissions', route: '/permissions', permissions: ['roles:manage'] },
         { id: 'assistant', label: 'AI Assistant', route: '/assistant', permissions: ['ai-assistant:read'] },
-        { id: 'jobs', label: 'Background Jobs', route: '/jobs', permissions: ['jobs:read'] },
-        { id: 'notifications', label: 'Notifications', route: '/notifications', permissions: ['notifications:read'] },
+        { id: 'notifications', label: 'Notifications', route: '/notifications', permissions: ['notifications:read'], moduleId: 'notifications' },
+        { id: 'background-jobs', label: 'Background Jobs', route: '/background-jobs', permissions: ['jobs:read'], moduleId: 'background-jobs' },
+        { id: 'logs', label: 'Logs', route: '/logs', permissions: ['logs:read'], moduleId: 'logs' },
       ],
     },
     {
@@ -5667,6 +6956,7 @@ export function getPortalMenuSections(): PortalMenuSection[] {
         { id: 'audit-log', label: 'Audit Log', route: '/audit-log' },
         { id: 'modules', label: 'Modules', route: '/settings/modules', moduleId: 'modules' },
         { id: 'settings', label: 'Settings', route: '/settings' },
+        { id: 'logging-settings', label: 'Logging Settings', route: '/settings/logging', permissions: ['logs:manage'] },
         { id: 'email-account', label: 'Email Account', route: '/settings/email-account' },
         { id: 'theme', label: 'Theme', route: '/settings/theme' },
         ...(AUTH_SERVER_ENABLED ? [{ id: 'auth-server', label: 'Auth Server', route: '/settings/auth-server' }] : []),
@@ -5675,6 +6965,360 @@ export function getPortalMenuSections(): PortalMenuSection[] {
     },
   ];
 }
+`;
+}
+
+function portalClientLoggerLibTs(): string {
+  return `import log from 'loglevel';
+
+type LogLevel = 'error' | 'warn' | 'info' | 'debug';
+
+const API = (import.meta as { env?: Record<string, string> }).env?.['VITE_API_URL'] ?? 'http://localhost:4000';
+const LOCAL_LEVEL_KEY = 'hf-client-log-level';
+
+function activeLevel(): LogLevel {
+  const value = localStorage.getItem(LOCAL_LEVEL_KEY);
+  return value === 'error' || value === 'warn' || value === 'info' || value === 'debug' ? value : 'info';
+}
+
+function levelToNumber(level: LogLevel): number {
+  return level === 'error' ? 4 : level === 'warn' ? 3 : level === 'info' ? 2 : 1;
+}
+
+function shouldSend(level: LogLevel): boolean {
+  return levelToNumber(level) >= levelToNumber(activeLevel());
+}
+
+export function setClientLogLevel(level: LogLevel): void {
+  localStorage.setItem(LOCAL_LEVEL_KEY, level);
+  log.setLevel(level);
+}
+
+export async function sendClientLog(level: LogLevel, message: string, details?: Record<string, unknown>): Promise<void> {
+  if (!shouldSend(level)) return;
+
+  const token = localStorage.getItem('token') ?? '';
+  const tenantId = localStorage.getItem('tenantId') ?? '';
+  if (!tenantId) return;
+
+  try {
+    await fetch(API + '/v1/logs', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        ...(token ? { authorization: 'Bearer ' + token } : {}),
+        'x-tenant-id': tenantId,
+      },
+      body: JSON.stringify({
+        level,
+        message,
+        tenantId,
+        service: 'portal-web',
+        details,
+      }),
+    });
+  } catch {
+    // Avoid throwing during normal UI flows.
+  }
+}
+
+export function installGlobalClientLogging(): void {
+  log.setLevel(activeLevel());
+
+  window.addEventListener('error', (event) => {
+    void sendClientLog('error', event.message ?? 'window error', {
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    });
+  });
+
+  window.addEventListener('unhandledrejection', (event) => {
+    const reason = event.reason instanceof Error ? event.reason.message : String(event.reason ?? 'Unknown rejection');
+    const stack = event.reason instanceof Error ? event.reason.stack : undefined;
+    void sendClientLog('error', 'Unhandled promise rejection', { reason, stack });
+  });
+}
+
+export const clientLogger = {
+  debug: (message: string, details?: Record<string, unknown>) => {
+    log.debug(message, details);
+    void sendClientLog('debug', message, details);
+  },
+  info: (message: string, details?: Record<string, unknown>) => {
+    log.info(message, details);
+    void sendClientLog('info', message, details);
+  },
+  warn: (message: string, details?: Record<string, unknown>) => {
+    log.warn(message, details);
+    void sendClientLog('warn', message, details);
+  },
+  error: (message: string, details?: Record<string, unknown>) => {
+    log.error(message, details);
+    void sendClientLog('error', message, details);
+  },
+};
+`;
+}
+
+function portalLogsViewerRoute(): string {
+  return `import { useEffect, useState } from 'react';
+
+type LogRow = {
+  id: string;
+  service: string;
+  level: 'error' | 'warn' | 'info' | 'debug';
+  message: string;
+  timestamp: string;
+  details?: unknown;
+};
+
+const API = (import.meta as { env?: Record<string, string> }).env?.['VITE_API_URL'] ?? 'http://localhost:4000';
+
+export default function LogsViewerPage() {
+  const [rows, setRows] = useState<LogRow[]>([]);
+  const [level, setLevel] = useState<'all' | 'error' | 'warn' | 'info' | 'debug'>('all');
+  const [service, setService] = useState('');
+  const [status, setStatus] = useState('');
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  async function load() {
+    const token = localStorage.getItem('token') ?? '';
+    const tenantId = localStorage.getItem('tenantId') ?? '';
+
+    const params = new URLSearchParams({ limit: '150' });
+    if (level !== 'all') params.set('level', level);
+    if (service.trim()) params.set('service', service.trim());
+
+    const res = await fetch(API + '/v1/logs?' + params.toString(), {
+      headers: { authorization: 'Bearer ' + token, 'x-tenant-id': tenantId },
+    });
+
+    if (!res.ok) {
+      setStatus('Failed to load logs.');
+      return;
+    }
+
+    setRows((await res.json()) as LogRow[]);
+    setStatus('');
+  }
+
+  return (
+    <div>
+      <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', margin: '0 0 0.75rem' }}>Logs Viewer</h2>
+      <p style={{ color: '#64748b', marginTop: 0, marginBottom: '1rem' }}>
+        Tenant-scoped enterprise logs across API and Portal events.
+      </p>
+
+      <div style={{ border: '1px solid #e2e8f0', borderRadius: 12, background: '#fff', padding: '1rem', marginBottom: '1rem', display: 'grid', gap: '0.65rem', gridTemplateColumns: '180px 1fr auto' }}>
+        <select value={level} onChange={(e) => setLevel(e.currentTarget.value as typeof level)} style={inputStyle}>
+          <option value="all">All levels</option>
+          <option value="error">error</option>
+          <option value="warn">warn</option>
+          <option value="info">info</option>
+          <option value="debug">debug</option>
+        </select>
+        <input value={service} onChange={(e) => setService(e.currentTarget.value)} placeholder="Filter by service (hubforge-api, portal-web)" style={inputStyle} />
+        <button onClick={() => void load()} style={buttonStyle}>Refresh</button>
+      </div>
+
+      {status ? <p style={{ color: '#b91c1c' }}>{status}</p> : null}
+
+      <div style={{ border: '1px solid #e2e8f0', borderRadius: 12, background: '#fff', overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '88px 150px 1fr 160px', gap: '0.5rem', padding: '0.65rem 0.8rem', borderBottom: '1px solid #e5e7eb', fontWeight: 700, color: '#334155' }}>
+          <span>Level</span>
+          <span>Service</span>
+          <span>Message</span>
+          <span>Timestamp</span>
+        </div>
+
+        {rows.map((row) => (
+          <details key={row.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+            <summary style={{ listStyle: 'none', display: 'grid', gridTemplateColumns: '88px 150px 1fr 160px', gap: '0.5rem', padding: '0.6rem 0.8rem', cursor: 'pointer' }}>
+              <span style={pillStyle(row.level)}>{row.level}</span>
+              <span>{row.service}</span>
+              <span>{row.message}</span>
+              <span style={{ color: '#64748b', fontSize: '0.82rem' }}>{new Date(row.timestamp).toLocaleString()}</span>
+            </summary>
+            <pre style={{ margin: 0, padding: '0.6rem 0.8rem 0.9rem', fontSize: '0.76rem', color: '#0f172a', background: '#f8fafc', whiteSpace: 'pre-wrap' }}>
+              {JSON.stringify(row.details ?? {}, null, 2)}
+            </pre>
+          </details>
+        ))}
+
+        {rows.length === 0 ? <p style={{ margin: 0, padding: '1rem', color: '#64748b' }}>No log records found.</p> : null}
+      </div>
+    </div>
+  );
+}
+
+const inputStyle = {
+  border: '1px solid #d1d5db',
+  borderRadius: 8,
+  padding: '8px 10px',
+};
+
+const buttonStyle = {
+  border: 'none',
+  borderRadius: 8,
+  padding: '8px 12px',
+  background: '#2563eb',
+  color: '#fff',
+  cursor: 'pointer',
+};
+
+function pillStyle(level: string) {
+  if (level === 'error') return { ...pillBase, background: '#fee2e2', color: '#991b1b' };
+  if (level === 'warn') return { ...pillBase, background: '#fef3c7', color: '#92400e' };
+  if (level === 'debug') return { ...pillBase, background: '#e0e7ff', color: '#3730a3' };
+  return { ...pillBase, background: '#dcfce7', color: '#166534' };
+}
+
+const pillBase = {
+  display: 'inline-flex',
+  borderRadius: 999,
+  padding: '2px 9px',
+  fontSize: '0.75rem',
+  fontWeight: 700,
+  width: 'fit-content',
+};
+`;
+}
+
+function portalLoggingSettingsRoute(): string {
+  return `import { useEffect, useState } from 'react';
+
+type LoggingSettings = {
+  level: 'error' | 'warn' | 'info' | 'debug';
+  useLocalDb: boolean;
+  retentionDays: number;
+  advancedEnabled: boolean;
+};
+
+const API = (import.meta as { env?: Record<string, string> }).env?.['VITE_API_URL'] ?? 'http://localhost:4000';
+
+export default function LoggingSettingsPage() {
+  const [settings, setSettings] = useState<LoggingSettings>({
+    level: 'info',
+    useLocalDb: true,
+    retentionDays: 30,
+    advancedEnabled: false,
+  });
+  const [status, setStatus] = useState('');
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  async function load() {
+    const token = localStorage.getItem('token') ?? '';
+    const tenantId = localStorage.getItem('tenantId') ?? '';
+
+    const res = await fetch(API + '/v1/logs/settings', {
+      headers: { authorization: 'Bearer ' + token, 'x-tenant-id': tenantId },
+    });
+    if (res.ok) {
+      setSettings((await res.json()) as LoggingSettings);
+    }
+  }
+
+  async function save() {
+    const token = localStorage.getItem('token') ?? '';
+    const tenantId = localStorage.getItem('tenantId') ?? '';
+
+    const res = await fetch(API + '/v1/logs/settings', {
+      method: 'PUT',
+      headers: {
+        'content-type': 'application/json',
+        authorization: 'Bearer ' + token,
+        'x-tenant-id': tenantId,
+      },
+      body: JSON.stringify(settings),
+    });
+
+    if (!res.ok) {
+      setStatus('Failed to save logging settings.');
+      return;
+    }
+    setStatus('Logging settings saved.');
+  }
+
+  return (
+    <div style={{ maxWidth: 760 }}>
+      <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', margin: '0 0 0.75rem' }}>Logging Settings</h2>
+      <p style={{ color: '#64748b', marginTop: 0, marginBottom: '1rem' }}>
+        Local DB logging is enabled by default. Turn on advanced logging to dual-write to Elasticsearch.
+      </p>
+
+      <div style={{ border: '1px solid #e2e8f0', borderRadius: 12, background: '#fff', padding: '1rem', display: 'grid', gap: '0.75rem' }}>
+        <label style={labelStyle}>Log Level</label>
+        <select value={settings.level} onChange={(e) => setSettings({ ...settings, level: e.currentTarget.value as LoggingSettings['level'] })} style={inputStyle}>
+          <option value="error">error</option>
+          <option value="warn">warn</option>
+          <option value="info">info</option>
+          <option value="debug">debug</option>
+        </select>
+
+        <label style={checkRowStyle}>
+          <input type="checkbox" checked={settings.useLocalDb} onChange={(e) => setSettings({ ...settings, useLocalDb: e.currentTarget.checked })} />
+          <span>Use local database logging (default)</span>
+        </label>
+
+        <label style={checkRowStyle}>
+          <input type="checkbox" checked={settings.advancedEnabled} onChange={(e) => setSettings({ ...settings, advancedEnabled: e.currentTarget.checked })} />
+          <span>Enable advanced logging sink (Elasticsearch)</span>
+        </label>
+
+        <label style={labelStyle}>Retention Days</label>
+        <input
+          type="number"
+          min={1}
+          value={settings.retentionDays}
+          onChange={(e) => setSettings({ ...settings, retentionDays: Math.max(1, Number(e.currentTarget.value || 30)) })}
+          style={inputStyle}
+        />
+
+        <div style={{ display: 'flex', gap: '0.6rem', marginTop: '0.4rem' }}>
+          <button onClick={save} style={buttonStyle}>Save Settings</button>
+          <button onClick={() => void load()} style={{ ...buttonStyle, background: '#fff', color: '#1e293b', border: '1px solid #cbd5e1' }}>Reload</button>
+        </div>
+        {status ? <p style={{ margin: 0, color: '#0f172a' }}>{status}</p> : null}
+      </div>
+    </div>
+  );
+}
+
+const labelStyle = {
+  fontSize: '0.85rem',
+  color: '#334155',
+  fontWeight: 600,
+};
+
+const inputStyle = {
+  border: '1px solid #d1d5db',
+  borderRadius: 8,
+  padding: '8px 10px',
+};
+
+const checkRowStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.55rem',
+  color: '#334155',
+  fontSize: '0.9rem',
+};
+
+const buttonStyle = {
+  border: 'none',
+  borderRadius: 8,
+  padding: '8px 12px',
+  background: '#2563eb',
+  color: '#fff',
+  cursor: 'pointer',
+};
 `;
 }
 
@@ -5729,6 +7373,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { getPortalMenuSections } from '../lib/menu';
 import { applyPortalTheme, applyStoredPortalTheme } from '../lib/theme';
 import { useI18n } from '../lib/i18n';
+import { installGlobalClientLogging } from '../lib/client-logger';
 
 const API = (import.meta as { env?: Record<string, string> }).env?.['VITE_API_URL'] ?? 'http://localhost:4000';
 
@@ -5739,8 +7384,10 @@ type NotificationDelivery = { id: string; status: string; subject?: string | nul
 function initialsFromName(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return 'U';
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
+  const first = parts[0] ?? 'U';
+  if (parts.length === 1) return first.slice(0, 2).toUpperCase();
+  const second = parts[1] ?? '';
+  return (first.charAt(0) + second.charAt(0)).toUpperCase();
 }
 
 export default function AppLayout() {
@@ -5752,10 +7399,19 @@ export default function AppLayout() {
   const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
   const [me, setMe] = useState<MeResponse>({});
   const [deliveries, setDeliveries] = useState<NotificationDelivery[]>([]);
+  const [moduleEnabled, setModuleEnabled] = useState<Record<string, boolean>>({});
 
   const sections = useMemo(() => getPortalMenuSections(), []);
+  const visibleSections = useMemo(
+    () => sections.map((section) => ({
+      ...section,
+      children: section.children.filter((item) => !item.moduleId || moduleEnabled[item.moduleId] !== false),
+    })).filter((section) => section.children.length > 0),
+    [moduleEnabled, sections],
+  );
 
   useEffect(() => {
+    installGlobalClientLogging();
     applyStoredPortalTheme();
     const rawCollapse = localStorage.getItem('hf_nav_collapsed');
     if (rawCollapse) {
@@ -5788,6 +7444,20 @@ export default function AppLayout() {
     });
     if (notifRes.ok) {
       setDeliveries((await notifRes.json()) as NotificationDelivery[]);
+    }
+
+    const moduleIds = [...new Set(sections.flatMap((section) => section.children.map((item) => item.moduleId).filter(Boolean) as string[]))];
+    if (moduleIds.length > 0) {
+      const entries = await Promise.all(moduleIds.map(async (moduleId) => {
+        const key = 'modules.' + moduleId + '.enabled';
+        const res = await fetch(API + '/v1/settings/' + encodeURIComponent(key), {
+          headers: { authorization: 'Bearer ' + token, 'x-tenant-id': tenantId },
+        });
+        if (!res.ok) return [moduleId, true] as const;
+        const data = (await res.json()) as { value?: boolean };
+        return [moduleId, data.value !== false] as const;
+      }));
+      setModuleEnabled(Object.fromEntries(entries));
     }
   }
 
@@ -5831,24 +7501,24 @@ export default function AppLayout() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--hf-surface-alt)', color: 'var(--hf-foreground)' }}>
-      <aside style={{ width: 276, background: 'var(--hf-sidebar)', borderRight: '1px solid rgba(148, 163, 184, 0.2)', display: 'flex', flexDirection: 'column', color: '#d7e1f0' }}>
-        <div style={{ minHeight: 72, display: 'flex', alignItems: 'center', padding: '0 1.25rem', borderBottom: '1px solid rgba(148, 163, 184, 0.2)' }}>
-          <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 40%, #0ea5e9 100%)', marginRight: 10 }} />
+      <aside style={{ width: 276, background: 'var(--hf-sidebar)', borderRight: '1px solid var(--hf-border)', display: 'flex', flexDirection: 'column', color: 'var(--hf-sidebar-text)' }}>
+        <div style={{ minHeight: 72, display: 'flex', alignItems: 'center', padding: '0 1.25rem', borderBottom: '1px solid var(--hf-border)' }}>
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: 'var(--hf-primary)', color: '#fff', fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>F</div>
           <div>
-            <p style={{ margin: 0, fontWeight: 700, color: '#eff6ff' }}>HubForge</p>
-            <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: '#9fb0cb', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{t('workspace.label', 'Workspace')}</p>
+            <p style={{ margin: 0, fontWeight: 700, color: 'var(--hf-foreground)' }}>HubForge Workspace</p>
+            <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: 'var(--hf-muted)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{t('workspace.label', 'Workspace')}</p>
           </div>
         </div>
 
         <nav style={{ padding: '0.9rem 0.6rem', flex: 1, overflowY: 'auto' }}>
-          {sections.map((section) => {
+          {visibleSections.map((section) => {
             const isCollapsed = collapsed[section.id] === true;
             return (
               <div key={section.id} style={{ marginBottom: '0.95rem' }}>
                 <button
                   type="button"
                   onClick={() => toggleSection(section.id)}
-                  style={{ width: '100%', textAlign: 'left', margin: '0 0 0.45rem', padding: '0.25rem 0.45rem', fontSize: '0.68rem', color: '#8fa2c0', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}
+                  style={{ width: '100%', textAlign: 'left', margin: '0 0 0.45rem', padding: '0.25rem 0.45rem', fontSize: '0.68rem', color: 'var(--hf-muted)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}
                 >
                   <span>{t('nav.section.' + section.id, section.label)}</span>
                   <span>{isCollapsed ? '+' : '-'}</span>
@@ -5868,7 +7538,7 @@ export default function AppLayout() {
                       marginBottom: 4.5,
                       color: isActive ? 'var(--hf-sidebar-active-text)' : 'var(--hf-sidebar-text)',
                       background: isActive ? 'var(--hf-sidebar-active)' : 'transparent',
-                      border: isActive ? '1px solid rgba(255, 255, 255, 0.24)' : '1px solid transparent',
+                      border: isActive ? '1px solid var(--hf-border-strong)' : '1px solid transparent',
                       fontWeight: isActive ? 600 : 500,
                     })}
                   >
@@ -5880,8 +7550,8 @@ export default function AppLayout() {
           })}
         </nav>
 
-        <div style={{ padding: '1rem', borderTop: '1px solid rgba(148, 163, 184, 0.2)' }}>
-          <button onClick={logout} style={{ width: '100%', padding: '8px 10px', borderRadius: 10, background: 'rgba(15, 23, 42, 0.35)', border: '1px solid rgba(148, 163, 184, 0.24)', color: '#d6e0ee', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}>
+        <div style={{ padding: '1rem', borderTop: '1px solid var(--hf-border)' }}>
+          <button onClick={logout} style={{ width: '100%', padding: '8px 10px', borderRadius: 10, background: 'var(--hf-surface)', border: '1px solid var(--hf-border)', color: 'var(--hf-foreground)', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}>
             {t('menu.logout', 'Logout')}
           </button>
         </div>
@@ -6012,6 +7682,18 @@ export default function SettingsIndexPage() {
           <p style={{ fontWeight: 700, color: 'var(--hf-foreground)', margin: '0 0 0.25rem' }}>Background Jobs</p>
           <p style={{ margin: 0, color: 'var(--hf-muted)', fontSize: '0.85rem' }}>Monitor queued work and trigger jobs directly from admin.</p>
         </Link>
+        <Link to="/customers" style={{ textDecoration: 'none', border: '1px solid var(--hf-border)', borderRadius: 12, background: 'var(--hf-surface)', padding: '1rem' }}>
+          <p style={{ fontWeight: 700, color: 'var(--hf-foreground)', margin: '0 0 0.25rem' }}>Customers</p>
+          <p style={{ margin: 0, color: 'var(--hf-muted)', fontSize: '0.85rem' }}>Manage customer accounts, service history, and account relationships.</p>
+        </Link>
+        <Link to="/dispatch" style={{ textDecoration: 'none', border: '1px solid var(--hf-border)', borderRadius: 12, background: 'var(--hf-surface)', padding: '1rem' }}>
+          <p style={{ fontWeight: 700, color: 'var(--hf-foreground)', margin: '0 0 0.25rem' }}>Dispatch Board</p>
+          <p style={{ margin: 0, color: 'var(--hf-muted)', fontSize: '0.85rem' }}>Coordinate work orders, appointments, and field technician assignments.</p>
+        </Link>
+        <Link to="/invoices" style={{ textDecoration: 'none', border: '1px solid var(--hf-border)', borderRadius: 12, background: 'var(--hf-surface)', padding: '1rem' }}>
+          <p style={{ fontWeight: 700, color: 'var(--hf-foreground)', margin: '0 0 0.25rem' }}>Invoices</p>
+          <p style={{ margin: 0, color: 'var(--hf-muted)', fontSize: '0.85rem' }}>Review invoice lifecycle, payment status, and collection health.</p>
+        </Link>
         <Link to="/assistant" style={{ textDecoration: 'none', border: '1px solid var(--hf-border)', borderRadius: 12, background: 'var(--hf-surface)', padding: '1rem' }}>
           <p style={{ fontWeight: 700, color: 'var(--hf-foreground)', margin: '0 0 0.25rem' }}>AI Assistant</p>
           <p style={{ margin: 0, color: 'var(--hf-muted)', fontSize: '0.85rem' }}>Use the tenant assistant endpoint for guided operations and planning support.</p>
@@ -6019,6 +7701,14 @@ export default function SettingsIndexPage() {
         <Link to="/notifications" style={{ textDecoration: 'none', border: '1px solid var(--hf-border)', borderRadius: 12, background: 'var(--hf-surface)', padding: '1rem' }}>
           <p style={{ fontWeight: 700, color: 'var(--hf-foreground)', margin: '0 0 0.25rem' }}>Notifications</p>
           <p style={{ margin: 0, color: 'var(--hf-muted)', fontSize: '0.85rem' }}>Manage templates and inspect delivery outcomes by tenant.</p>
+        </Link>
+        <Link to="/logs" style={{ textDecoration: 'none', border: '1px solid var(--hf-border)', borderRadius: 12, background: 'var(--hf-surface)', padding: '1rem' }}>
+          <p style={{ fontWeight: 700, color: 'var(--hf-foreground)', margin: '0 0 0.25rem' }}>Logs Viewer</p>
+          <p style={{ margin: 0, color: 'var(--hf-muted)', fontSize: '0.85rem' }}>Inspect tenant-scoped API and portal logs with filters.</p>
+        </Link>
+        <Link to="/settings/logging" style={{ textDecoration: 'none', border: '1px solid var(--hf-border)', borderRadius: 12, background: 'var(--hf-surface)', padding: '1rem' }}>
+          <p style={{ fontWeight: 700, color: 'var(--hf-foreground)', margin: '0 0 0.25rem' }}>Logging Settings</p>
+          <p style={{ margin: 0, color: 'var(--hf-muted)', fontSize: '0.85rem' }}>Manage level, retention, local DB, and advanced sink toggles.</p>
         </Link>
         <Link to="/settings/theme" style={{ textDecoration: 'none', border: '1px solid var(--hf-border)', borderRadius: 12, background: 'var(--hf-surface)', padding: '1rem' }}>
           <p style={{ fontWeight: 700, color: 'var(--hf-foreground)', margin: '0 0 0.25rem' }}>Theme</p>
@@ -6157,7 +7847,7 @@ const API = (import.meta as { env?: Record<string, string> }).env?.['VITE_API_UR
 export default function ModulesSettingsPage() {
   const { t } = useI18n();
   const menu = useMemo(() => getPortalMenuSections(), []);
-  const moduleItems = useMemo(() => menu.flatMap((section) => section.children.filter((item) => item.moduleId || item.id === 'assistant' || item.id === 'notifications' || item.id === 'jobs')), [menu]);
+  const moduleItems = useMemo(() => menu.flatMap((section) => section.children.filter((item) => item.moduleId || item.id === 'assistant' || item.id === 'notifications' || item.id === 'jobs' || item.id === 'logs')), [menu]);
   const [enabled, setEnabled] = useState<Record<string, boolean>>({});
   const [savingKey, setSavingKey] = useState<string | null>(null);
 
@@ -6359,6 +8049,33 @@ function portalDashboardRoute(): string {
         ))}
       </div>
     </div>
+  );
+}
+`;
+}
+
+function portalModuleOverviewRoute(title: string, description: string, highlights: string[]): string {
+  const cards = JSON.stringify(highlights);
+  return `const highlights = ${cards} as string[];
+
+export default function ModuleOverviewPage() {
+  return (
+    <section>
+      <div style={{ marginBottom: '1rem' }}>
+        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--hf-muted)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Operations Workspace</p>
+        <h2 style={{ fontSize: '1.85rem', fontWeight: 800, margin: '0.35rem 0 0.45rem', color: 'var(--hf-foreground)', letterSpacing: '-0.03em' }}>${title}</h2>
+        <p style={{ margin: 0, color: 'var(--hf-muted)', maxWidth: 760 }}>${description}</p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '0.85rem' }}>
+        {highlights.map((item) => (
+          <article key={item} style={{ border: '1px solid var(--hf-border)', borderRadius: 14, background: 'var(--hf-surface)', boxShadow: 'var(--hf-card-shadow-soft)', padding: '0.95rem 1rem' }}>
+            <p style={{ margin: 0, color: 'var(--hf-foreground)', fontWeight: 700 }}>{item}</p>
+            <p style={{ margin: '0.35rem 0 0', color: 'var(--hf-muted)', fontSize: '0.86rem' }}>Configured and ready for module-specific API wiring.</p>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 `;
@@ -7919,21 +9636,21 @@ export type ThemePreset = 'ynex-light' | 'slate' | 'forest';
 
 const PRESETS: Record<ThemePreset, Record<string, string>> = {
   'ynex-light': {
-    '--hf-primary': '#2563eb',
-    '--hf-primary-hover': '#1d4ed8',
-    '--hf-primary-soft': 'rgba(37, 99, 235, 0.12)',
-    '--hf-surface': 'rgba(255, 255, 255, 0.92)',
-    '--hf-surface-alt': '#f4f7fb',
-    '--hf-surface-muted': '#eef3f8',
-    '--hf-foreground': '#172033',
-    '--hf-muted': '#617089',
-    '--hf-border': 'rgba(148, 163, 184, 0.22)',
-    '--hf-border-strong': 'rgba(100, 116, 139, 0.32)',
-    '--hf-sidebar': 'linear-gradient(180deg, #0f172a 0%, #111c34 100%)',
-    '--hf-sidebar-text': '#afbdd4',
-    '--hf-sidebar-active': 'rgba(255, 255, 255, 0.08)',
-    '--hf-sidebar-active-text': '#f8fbff',
-    '--hf-header': 'rgba(255, 255, 255, 0.82)',
+    '--hf-primary': '#845adf',
+    '--hf-primary-hover': '#6f43cc',
+    '--hf-primary-soft': 'rgba(132, 90, 223, 0.12)',
+    '--hf-surface': '#ffffff',
+    '--hf-surface-alt': '#f0f1f7',
+    '--hf-surface-muted': '#f8f8fb',
+    '--hf-foreground': '#2a2f3e',
+    '--hf-muted': '#8c9097',
+    '--hf-border': '#e9edf4',
+    '--hf-border-strong': '#d7ddea',
+    '--hf-sidebar': '#ffffff',
+    '--hf-sidebar-text': '#536485',
+    '--hf-sidebar-active': '#f0ebfc',
+    '--hf-sidebar-active-text': '#845adf',
+    '--hf-header': '#ffffff',
     '--hf-card-shadow': '0 18px 40px rgba(15, 23, 42, 0.08)',
     '--hf-card-shadow-soft': '0 8px 24px rgba(15, 23, 42, 0.05)',
   },

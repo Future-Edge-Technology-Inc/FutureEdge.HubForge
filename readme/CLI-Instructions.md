@@ -25,11 +25,14 @@ Run from repository root:
   - `pnpm hubforge feature add sync-orders --type background-job --target my-saas`
   - `pnpm hubforge feature add auth --type auth-flow --target my-saas`
   - `pnpm hubforge feature add notifications --type notifications-module --target my-saas`
+  - `pnpm hubforge feature add logging --type logging-module --target my-saas`
+  - `pnpm hubforge feature add equipment --type domain-resource --target my-saas`
   - `pnpm hubforge infra --target k8s`
   - `pnpm hubforge db seed --target ./local-dev`
   - `pnpm hubforge authserver enable --target ./local-dev --force`
-  - `pnpm hubforge upgrade --target ../fieldops-workhub-local`
-  - `pnpm hubforge:regen -- --target ../fieldops-workhub-local --skip-validation`
+  - `pnpm hubforge upgrade --target ../sample-workspace`
+  - `pnpm hubforge validate --target ../sample-workspace`
+  - `pnpm hubforge:regen -- --target ../sample-workspace --skip-validation`
 
 ## Commands
 
@@ -91,7 +94,7 @@ Generated output includes:
 - appstack capability baseline package (`packages/appstack`)
 - auth-client baseline package (`packages/auth-client`)
 - sdk-server baseline package (`packages/sdk-server`)
-- migration-ready DB package (`packages/db/prisma/schema.prisma`)
+- migration-ready DB package (`packages/db/prisma/schema.prisma` for `full`; `packages/db/src/schema.ts` + `packages/db/drizzle.config.ts` for `full-postgres-rls`)
 - migration tracking baseline (`packages/db/migrations/0001_init.sql`)
 - API docs baseline (`/openapi.json` OpenAPI 3.1 + interactive `/docs` Scalar API Reference)
 - API CORS baseline for browser clients (including preflight support)
@@ -102,11 +105,19 @@ Generated output includes:
 
 Additional `full-postgres-rls` output includes:
 
-- tracked RLS migration baseline (`packages/db/migrations/0002_enable_rls.sql`)
+- Drizzle ORM schema files:
+  - `packages/db/src/schema.ts` (framework tables: tenants, users, organizations, etc.)
+  - `packages/db/src/fieldops.ts` (domain tables with `fo_` prefix)
+  - `packages/db/drizzle.config.ts` (drizzle-kit config)
+- Drizzle migrations directory (`packages/db/drizzle/`) with `_journal.json` tracking
+- PostgreSQL RLS SQL scripts:
+  - `packages/db/drizzle/rls.sql` (framework tables: `current_tenant_id()` function + RLS policies)
+  - `packages/db/drizzle/rls-fieldops.sql` (domain tables RLS policies)
 - event package (`packages/events`)
 - workflow package (`packages/workflows`)
 - Postgres bootstrap helper (`packages/db/scripts/bootstrap-postgres.mjs`)
-- shadow database support in Prisma datasource (`SHADOW_DATABASE_URL`)
+
+> Note: `full-postgres-rls` uses **Drizzle ORM** (not Prisma). Run `pnpm db:generate` → `pnpm db:migrate` → `pnpm db:seed` to initialize the database.
 
 ### 2. Feature command
 
@@ -126,7 +137,9 @@ Options:
   - `auth-flow`
   - `billing-module`
   - `notifications-module`
+  - `logging-module`
   - `ai-agent`
+  - `domain-resource` (Drizzle-backed table + CRUD API routes + portal list/detail/new pages; `full-postgres-rls` only)
 - `--target <path>` target project path (defaults to current directory)
 
 Generated output by type:
@@ -143,7 +156,9 @@ Generated output by type:
 - `auth-flow`: auth route + auth client helper scaffold with provider introspection
 - `billing-module`: billing route + billing events + portal billing page + server patch
 - `notifications-module`: notifications package + API route + worker scaffold + server patch
+- `logging-module`: logging API route + portal logs viewer/settings pages + server patch
 - `ai-agent`: AI agent Python scaffold + API invoke route + server patch
+- `domain-resource`: Drizzle table appended to `packages/db/src/fieldops.ts` + full CRUD Hono route (list/get/create/update/delete, ilike search) + portal list page + portal detail page + portal new page (`full-postgres-rls` projects only)
 
 Unified seeding baseline:
 
@@ -188,7 +203,21 @@ Generates Kubernetes baseline manifests under `infra/k8s`:
 - After enabling, run database migration in the target project:
   - `pnpm --dir <target> db:migrate`
 
-### 7. Workspace regeneration/upgrade script
+### 7. Validate command
+
+`hubforge validate [--target <path>] [--quick] [--skip-install]`
+
+- Validates required generated project files exist
+- Optionally runs install/build/typecheck checks for API and Portal
+- Use `--quick` for structure-only validation
+
+Flags:
+
+- `--target <path>` defaults to `.`
+- `--quick` checks required files only
+- `--skip-install` skips install before build/typecheck
+
+### 8. Workspace regeneration/upgrade script
 
 Use the repository script to safely bring an existing generated workspace up to parity with current generators.
 
@@ -213,12 +242,7 @@ Flags:
 - `--initialize-if-missing` scaffold target first if `hubforge.json` is missing
 - `--force-upgrade` passes `--force` to `hubforge upgrade`
 - `--skip-validation` skips install/migrate/seed
-- `--feature-profile fieldops` applies the FieldOps curated feature bundle
-
-Legacy aliases remain available:
-
-- `pnpm fieldops:regen`
-- `pnpm fieldops:regen:sh`
+- `--feature-profile operations-saas` applies a curated operations SaaS feature bundle
 
 ## Documentation discipline
 
